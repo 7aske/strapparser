@@ -3,6 +3,7 @@ package com._7aske.strapparser.parser
 import com._7aske.strapparser.parser.extensions.ordinalIndexOf
 import com._7aske.strapparser.parser.iter.TokenIterator
 import com._7aske.strapparser.parser.ast.*
+import com._7aske.strapparser.util.ParserUtil.Companion.printLocation
 
 class Parser(private val text: String, tokens: List<Token>) :
     TokenIterator(tokens) {
@@ -17,7 +18,7 @@ class Parser(private val text: String, tokens: List<Token>) :
                 continue
             }
 
-            printLocation(peek())
+            printLocation(text, peek())
             throw unexpectedToken(peek())
         }
 
@@ -120,7 +121,7 @@ class Parser(private val text: String, tokens: List<Token>) :
         val token = getNextIfType(expected)
 
         if (token == null) {
-            printLocation(peek())
+            printLocation(text, peek())
             throw expectedToken(expected, peek())
         }
 
@@ -131,7 +132,7 @@ class Parser(private val text: String, tokens: List<Token>) :
         val token = getNextIfType(expected)
 
         if (token == null) {
-            printLocation(peek())
+            printLocation(text, peek())
             throw unexpectedToken(peek())
         }
 
@@ -143,36 +144,4 @@ class Parser(private val text: String, tokens: List<Token>) :
 
     private fun expectedToken(expected: TokenType, got: Token) =
         IllegalStateException("Expected token type $expected got ${got.type}")
-
-    private fun printLocation(token: Token) {
-        // + 1 to skip that starting newline
-        val startIndex = text.ordinalIndexOf("\n", token.startRow) + 1
-        // to find the end of the line
-        val endIndex = text.indexOf("\n", startIndex + 1).let {
-            if (it == -1) {
-                text.length
-            } else {
-                it
-            }
-        }
-
-        val line = text.substring(startIndex, endIndex)
-        System.err.println(line)
-
-        val numTabs = line.count { it == '\t' }
-
-        for (i in 0 until token.startChar + 3 * numTabs) {
-            System.err.print(' ')
-        }
-        for (i in 0 until token.endChar - token.startChar) {
-            System.err.print('^')
-        }
-        System.err.print('\n')
-
-        for (i in 0 until token.startChar + 3 * numTabs) {
-            System.err.print('─')
-        }
-        System.err.print('┘')
-        System.err.print('\n')
-    }
 }

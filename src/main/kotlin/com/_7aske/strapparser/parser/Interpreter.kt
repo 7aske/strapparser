@@ -1,0 +1,114 @@
+package com._7aske.strapparser.parser
+
+import com._7aske.strapparser.parser.ast.*
+import com._7aske.strapparser.parser.definitions.*
+import com._7aske.strapparser.util.ParserUtil.Companion.printLocation
+
+class Interpreter(
+    private val text: String,
+    private val astList: List<AstNode>
+) {
+    // interpretation result
+    private val entities = mutableMapOf<String, Entity>()
+    private val incompleteRefs = mutableListOf<IncompleteRefFieldType>()
+
+    fun interpret(): List<Entity> {
+        for (ast in astList) {
+            evaluate(ast)
+        }
+
+        evaluateIncompleteRefs()
+
+        return entities.values.toList()
+    }
+
+    private fun evaluateIncompleteRefs() {
+        // this can be optimized
+        for (entity in entities.values) {
+            val resolvedFields = entity.fields
+                .map {
+                    if (it.type is IncompleteRefFieldType) {
+                        if (!entities.contains(it.type.value)) {
+                            printLocation(text, it.type.token)
+                            throw IllegalStateException("Undefined reference to entity '${it.type.value}'")
+                        }
+
+                        it.type = RefFieldType(
+                            it.token,
+                            it.type.value,
+                            entities[it.type.value]!!
+                        )
+                    }
+
+                    it
+                }
+
+            entity.fields = resolvedFields
+        }
+    }
+
+    private fun evaluate(ast: AstNode) {
+        when (ast) {
+            is AstEntityNode -> {
+                val entity = evaluateEntityNode(ast)
+                entities[entity.name] = entity
+            }
+        }
+    }
+
+    private fun evaluateEntityNode(ast: AstEntityNode): Entity {
+        val name = ast.name.token.value
+        val fields = ast.fields
+            .map { evaluateFieldNode(it) }
+            .toList()
+
+        // TODO attributes
+
+        return Entity(ast.token, name, fields, listOf())
+    }
+
+    private fun evaluateFieldNode(ast: AstFieldNode): Field {
+        val name = ast.name.token.value
+        val type = evaluateAstTypeNode(ast.type)
+
+        // TODO attributes
+
+        return Field(ast.token, name, type, listOf())
+    }
+
+    private fun evaluateAstTypeNode(type: AstNode): FieldType {
+        return when (type) {
+            is AstRefNode -> {
+                val reference = type.typeNode.token.value
+                if (entities.contains(reference)) {
+                    return RefFieldType(
+                        type.typeNode.token,
+                        reference,
+                        entities[reference]!!
+                    )
+                } else {
+                    val incompleteType = IncompleteRefFieldType(
+                        type.typeNode.token,
+                        reference
+                    )
+
+                    incompleteRefs.add(incompleteType)
+
+                    return incompleteType
+                }
+            }
+
+            is AstListNode -> ListFieldType(
+                type.token,
+                type.typeNode.token.value
+            )
+
+            is AstIdentifierNode -> DataFieldType(type.token, type.token.value)
+            else -> {
+                printLocation(text, type.token)
+                throw IllegalStateException("Invalid field type declaration")
+            }
+        }
+    }
+
+}
