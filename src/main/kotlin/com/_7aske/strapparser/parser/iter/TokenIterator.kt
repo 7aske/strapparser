@@ -39,10 +39,7 @@ open class TokenIterator(private val tokens: List<Token>) : Iterator<Token> {
         return eaten
     }
 
-    fun isPeekOfType(type: TokenType, vararg types: TokenType): Boolean {
-        val typeList: MutableList<TokenType> = ArrayList()
-        typeList.add(type)
-        typeList.addAll(types.asList())
-        return hasNext() && typeList.contains(peek().type)
+    fun isPeekOfType(vararg types: TokenType): Boolean {
+        return hasNext() && types.contains(peek().type)
     }
 }

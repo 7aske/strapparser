@@ -28,15 +28,14 @@ class Interpreter(
             val resolvedFields = entity.fields
                 .map {
                     if (it.type is IncompleteRefFieldType) {
-                        if (!entities.contains(it.type.value)) {
+                        check(entities.contains(it.type.value)) {
                             printLocation(text, it.type.token)
-                            throw IllegalStateException("Undefined reference to entity '${it.type.value}'")
+                            "Undefined reference to entity '${it.type.value}'"
                         }
 
                         it.type = RefFieldType(
                             it.token,
                             it.type.value,
-                            entities[it.type.value]!!
                         )
                     }
 
@@ -62,18 +61,20 @@ class Interpreter(
             .map { evaluateFieldNode(it) }
             .toList()
 
-        // TODO attributes
+        val attrs = ast.attributes
+            .map { Attribute(it.token, it.token.value) }
 
-        return Entity(ast.token, name, fields, listOf())
+        return Entity(ast.token, name, fields, attrs)
     }
 
     private fun evaluateFieldNode(ast: AstFieldNode): Field {
         val name = ast.name.token.value
         val type = evaluateAstTypeNode(ast.type)
 
-        // TODO attributes
+        val attrs = ast.attributes
+            .map { Attribute(it.token, it.token.value) }
 
-        return Field(ast.token, name, type, listOf())
+        return Field(ast.token, name, type, attrs)
     }
 
     private fun evaluateAstTypeNode(type: AstNode): FieldType {
@@ -84,7 +85,6 @@ class Interpreter(
                     return RefFieldType(
                         type.typeNode.token,
                         reference,
-                        entities[reference]!!
                     )
                 } else {
                     val incompleteType = IncompleteRefFieldType(

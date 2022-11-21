@@ -8,7 +8,7 @@ internal class LexerTest {
 
     @Test
     fun `test lexing`() {
-        val text = "entity User\n\tfield id integer serial"
+        val text = "entity User\n\tfield `id` integer serial id"
 
         val lexer = Lexer(text)
 
@@ -22,5 +22,6 @@ internal class LexerTest {
         assertEquals(TokenType.IDENTIFIER, tokens[5].type)
         assertEquals(TokenType.IDENTIFIER, tokens[6].type)
         assertEquals(TokenType.SERIAL, tokens[7].type)
+        assertEquals(TokenType.ID, tokens[8].type)
     }
 }

@@ -1,8 +1,7 @@
 package com._7aske.strapparser.parser
 
-import com._7aske.strapparser.parser.extensions.ordinalIndexOf
-import com._7aske.strapparser.parser.iter.TokenIterator
 import com._7aske.strapparser.parser.ast.*
+import com._7aske.strapparser.parser.iter.TokenIterator
 import com._7aske.strapparser.util.ParserUtil.Companion.printLocation
 
 class Parser(private val text: String, tokens: List<Token>) :
@@ -22,7 +21,7 @@ class Parser(private val text: String, tokens: List<Token>) :
             throw unexpectedToken(peek())
         }
 
-        return parsed;
+        return parsed
     }
 
     private fun skip(tokenType: TokenType, vararg tokenTypes: TokenType) {
@@ -61,11 +60,7 @@ class Parser(private val text: String, tokens: List<Token>) :
     }
 
     private fun isPeekOfTypeAttribute(): Boolean =
-        isPeekOfType(
-            TokenType.UNIQUE,
-            TokenType.SERIAL,
-            TokenType.OWNER
-        )
+        isPeekOfType(*TokenType.attributeTypes)
 
     private fun parseFieldNode(): AstFieldNode {
         val fieldToken = getOrThrowExpectedToken(TokenType.FIELD)

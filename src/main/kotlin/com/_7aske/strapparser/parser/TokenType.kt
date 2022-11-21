@@ -5,13 +5,15 @@ enum class TokenType(val keyword: String) {
     FIELD("field"),
     LIST("list"),
     SERIAL("serial"),
+    ID("id"),
     REFERENCES("references"),
     OWNER("owner"),
     UNIQUE("unique"),
     SPACE(" "),
     TAB("\t"),
     NEWLINE("\n"),
-    IDENTIFIER("<IDEN>");
+    IDENTIFIER("<IDEN>"),
+    TYPE("<TYPE>");
 
     companion object {
         private val valuesMap: Map<String, TokenType> =
@@ -22,6 +24,13 @@ enum class TokenType(val keyword: String) {
 
         fun tryParse(value: Char): TokenType? =
             tryParse(value.toString())
+
+        val attributeTypes = arrayOf(
+            UNIQUE,
+            SERIAL,
+            OWNER,
+            ID
+        )
     }
 
     override fun toString(): String =

@@ -12,16 +12,16 @@ internal class ParserTest {
     fun `test parse`() {
         val text = """
             entity User
-                field id int serial
+                field `id` int serial
                 field roles list Role
                 
             entity Post
-                field id int serial
+                field `id` int serial
                 field content string
                 field user references User
                 
             entity Role
-                field id int serial
+                field `id` int serial
                 field name string unique
         """.trimIndent()
 

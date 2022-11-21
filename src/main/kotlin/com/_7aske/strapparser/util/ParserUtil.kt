@@ -5,9 +5,9 @@ import com._7aske.strapparser.parser.extensions.ordinalIndexOf
 
 class ParserUtil private constructor() {
     companion object {
-        fun printLocation(text: String, token: Token) {
+        fun printLocation(text: String, row: Int, startChar: Int, endChar: Int) {
             // + 1 to skip that starting newline
-            val startIndex = text.ordinalIndexOf("\n", token.startRow) + 1
+            val startIndex = text.ordinalIndexOf("\n", row) + 1
             // to find the end of the line
             val endIndex = text.indexOf("\n", startIndex + 1).let {
                 if (it == -1) {
@@ -22,19 +22,23 @@ class ParserUtil private constructor() {
 
             val numTabs = line.count { it == '\t' }
 
-            for (i in 0 until token.startChar + 3 * numTabs) {
+            repeat(startChar + 3 * numTabs) {
                 System.err.print(' ')
             }
-            for (i in 0 until token.endChar - token.startChar) {
+            repeat(endChar - startChar) {
                 System.err.print('^')
             }
             System.err.print('\n')
 
-            for (i in 0 until token.startChar + 3 * numTabs) {
+            repeat(startChar + 3 * numTabs) {
                 System.err.print('─')
             }
+
             System.err.print('┘')
             System.err.print('\n')
         }
+
+        fun printLocation(text: String, token: Token) =
+            printLocation(text, token.startRow, token.startChar, token.endChar)
     }
 }

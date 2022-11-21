@@ -11,16 +11,16 @@ internal class InterpreterTest {
     fun interpret() {
         val text = """
             entity Post
-                field id int serial
+                field `id` int serial
                 field content string
                 field user references User
                 
             entity User
-                field id int serial
+                field `id` int serial
                 field roles list Role
                 
             entity Role
-                field id int serial
+                field `id` int serial
                 field name string unique
         """.trimIndent()
 
