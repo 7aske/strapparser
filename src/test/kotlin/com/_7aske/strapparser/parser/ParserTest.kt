@@ -53,7 +53,6 @@ internal class ParserTest {
         assertThrows<IllegalStateException> {
             parser.parse()
         }
-
     }
 
     @Test
@@ -70,6 +69,5 @@ internal class ParserTest {
         assertThrows<IllegalStateException> {
             parser.parse()
         }
-
     }
 }

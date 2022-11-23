@@ -1,6 +1,5 @@
 package com._7aske.strapparser.parser.iter
 
-
 open class StringIterator(protected val content: String) : Iterator<Char> {
     private val endIndex: Int = content.length
     private var index = 0

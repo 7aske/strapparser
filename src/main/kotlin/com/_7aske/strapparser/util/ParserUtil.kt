@@ -1,7 +1,9 @@
 package com._7aske.strapparser.util
 
+import com._7aske.strapparser.extensions.ordinalIndexOf
 import com._7aske.strapparser.parser.Token
-import com._7aske.strapparser.parser.extensions.ordinalIndexOf
+
+const val TAB_OFFSET = 3
 
 class ParserUtil private constructor() {
     companion object {
@@ -22,7 +24,7 @@ class ParserUtil private constructor() {
 
             val numTabs = line.count { it == '\t' }
 
-            repeat(startChar + 3 * numTabs) {
+            repeat(startChar + TAB_OFFSET * numTabs) {
                 System.err.print(' ')
             }
             repeat(endChar - startChar) {
@@ -30,7 +32,7 @@ class ParserUtil private constructor() {
             }
             System.err.print('\n')
 
-            repeat(startChar + 3 * numTabs) {
+            repeat(startChar + TAB_OFFSET * numTabs) {
                 System.err.print('─')
             }
 

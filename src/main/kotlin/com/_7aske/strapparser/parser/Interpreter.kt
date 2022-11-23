@@ -106,9 +106,8 @@ class Interpreter(
             is AstIdentifierNode -> DataFieldType(type.token, type.token.value)
             else -> {
                 printLocation(text, type.token)
-                throw IllegalStateException("Invalid field type declaration")
+                error("Invalid field type declaration")
             }
         }
     }
-
 }

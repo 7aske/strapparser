@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test
 
 internal class LexerTest {
 
-
     @Test
     fun `test lexing`() {
         val text = "entity User\n\tfield `id` integer serial id"

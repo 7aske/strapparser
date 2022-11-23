@@ -7,6 +7,4 @@ class Entity(
     val name: String,
     var fields: List<Field>,
     val attributes: List<Attribute>
-) : Definition(token) {
-
-}
+) : Definition(token)

@@ -36,7 +36,6 @@ class Parser(private val text: String, tokens: List<Token>) :
 
         getOrThrowUnexpectedToken(TokenType.NEWLINE)
 
-
         val fields = mutableListOf<AstFieldNode>()
 
         while (isPeekOfType(TokenType.TAB, TokenType.SPACE, TokenType.FIELD)) {
@@ -44,8 +43,6 @@ class Parser(private val text: String, tokens: List<Token>) :
             fields.add(parseFieldNode())
             skip(TokenType.NEWLINE)
         }
-
-
 
         val attributeNodes = mutableListOf<AstNode>()
         while (isPeekOfTypeAttribute())
@@ -123,7 +120,7 @@ class Parser(private val text: String, tokens: List<Token>) :
         return token
     }
 
-    private fun getOrThrowUnexpectedToken(expected: TokenType) : Token {
+    private fun getOrThrowUnexpectedToken(expected: TokenType): Token {
         val token = getNextIfType(expected)
 
         if (token == null) {

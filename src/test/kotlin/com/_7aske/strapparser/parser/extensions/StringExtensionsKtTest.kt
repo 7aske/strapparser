@@ -1,5 +1,6 @@
 package com._7aske.strapparser.parser.extensions
 
+import com._7aske.strapparser.extensions.ordinalIndexOf
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 

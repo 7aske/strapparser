@@ -8,7 +8,15 @@ class Field(
     var type: FieldType,
     val attributes: List<Attribute>
 ) : Definition(token) {
+
     fun isRef() = type is RefFieldType
-    fun isList() = type is RefFieldType
+
+    fun isList() = type is ListFieldType
+
     fun isRegular() = !isRef() && !isList()
+
+    fun getReferencedEntityName(): String {
+        check(isList() || isRef())
+        return type.value
+    }
 }

@@ -3,7 +3,6 @@ package com._7aske.strapparser.parser.iter
 import com._7aske.strapparser.parser.Token
 import com._7aske.strapparser.parser.TokenType
 
-
 open class TokenIterator(private val tokens: List<Token>) : Iterator<Token> {
     private val endIndex = tokens.size
     var index = 0
@@ -19,7 +18,7 @@ open class TokenIterator(private val tokens: List<Token>) : Iterator<Token> {
 
     @JvmOverloads
     fun rewind(num: Int = 1) {
-        if (index - num < 0) throw IndexOutOfBoundsException()
+        if (index - num < 0) throw IndexOutOfBoundsException("Index out of bounds: ${index - num}")
         index -= num
     }
 

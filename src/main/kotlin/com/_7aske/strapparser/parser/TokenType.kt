@@ -39,6 +39,4 @@ enum class TokenType(val keyword: String) {
             "\t" -> "\\t"
             else -> "'$keyword'"
         }
-
-
 }

@@ -1,9 +1,7 @@
 package com._7aske.strapparser.parser
 
-import com._7aske.strapparser.parser.ast.AstEntityNode
-import org.junit.jupiter.api.Test
-
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 
 internal class InterpreterTest {
 
