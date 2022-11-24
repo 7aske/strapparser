@@ -7,6 +7,7 @@ import com._7aske.strapparser.parser.StrapFileResolver
 import java.nio.file.Paths
 
 class SpringJavaGeneratorImpl : Generator {
+    private val dataTypeResolver = SpringJavaDataTypeResolverImpl()
 
     override fun generate(args: Args) {
         val entities = StrapFileResolver().resolve(Paths.get(args.inputFile))
@@ -15,10 +16,28 @@ class SpringJavaGeneratorImpl : Generator {
         val ctx = GeneratorContext(entities, args)
 
         entities.values.forEach {
-            val generator = SpringJavaEntityGeneratorImpl(it, ctx)
-            val outPath = generator.getOutputFilePath()
+            val entityGenerator = SpringJavaEntityGeneratorImpl(it, ctx, dataTypeResolver)
+            val entityOutPath = entityGenerator.getOutputFilePath()
 
-            writeString(outPath, generator.generateEntity())
+            writeString(entityOutPath, entityGenerator.generate())
+
+            val repositoryGenerator = SpringJavaRepositoryGeneratorImpl(
+                entityGenerator,
+                ctx,
+                dataTypeResolver
+            )
+            val repositoryOutPath = repositoryGenerator.getOutputFilePath()
+
+            writeString(repositoryOutPath, repositoryGenerator.generate())
+
+            val controllerGenerator = SpringJavaControllerGeneratorImpl(
+                entityGenerator,
+                ctx,
+                dataTypeResolver
+            )
+            val controllerOutPath = controllerGenerator.getOutputFilePath()
+
+            writeString(controllerOutPath, controllerGenerator.generate())
         }
     }
 }

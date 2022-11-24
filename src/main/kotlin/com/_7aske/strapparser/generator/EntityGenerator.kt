@@ -1,27 +1,27 @@
 package com._7aske.strapparser.generator
 
+import com._7aske.strapparser.parser.definitions.Entity
 import com._7aske.strapparser.parser.definitions.Field
-import java.nio.file.Path
 
-interface EntityGenerator {
+abstract class EntityGenerator(
+    protected val entity: Entity,
+    ctx: GeneratorContext,
+    dataTypeResolver: DataTypeResolver
+): BaseGenerator(ctx, dataTypeResolver) {
 
-    fun getOutputFilePath(): Path
+    abstract fun generateSetter(field: Field): String
 
-    fun generateEntity(): String
+    abstract fun generateGetter(field: Field): String
 
-    fun generateSetter(field: Field): String
+    abstract fun resolveVariableName(): String
 
-    fun generateGetter(field: Field): String
+    abstract fun resolveVariableName(field: Field): String
 
-    fun resolveClassName(): String
+    abstract fun resolveFieldSetter(field: Field): String
 
-    fun resolveVariableName(): String
+    abstract fun resolveFieldGetter(field: Field): String
 
-    fun resolveVariableName(field: Field): String
+    abstract fun generateField(field: Field): String
 
-    fun resolveFieldSetter(field: Field): String
-
-    fun resolveFieldGetter(field: Field): String
-
-    fun generateField(field: Field, ctx: GeneratorContext): String
+    abstract fun getIdFields(): List<Field>
 }

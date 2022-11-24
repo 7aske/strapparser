@@ -3,23 +3,22 @@ package com._7aske.strapparser.generator.spring
 import com._7aske.strapparser.extensions.capitalize
 import com._7aske.strapparser.extensions.plural
 import com._7aske.strapparser.extensions.uncapitalize
+import com._7aske.strapparser.generator.DataTypeResolver
 import com._7aske.strapparser.generator.EntityGenerator
 import com._7aske.strapparser.generator.GeneratorContext
 import com._7aske.strapparser.parser.TokenType
 import com._7aske.strapparser.parser.definitions.Entity
 import com._7aske.strapparser.parser.definitions.Field
 import com.google.googlejavaformat.java.Formatter
-import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.nio.file.Paths
 
 class SpringJavaEntityGeneratorImpl(
-    private val entity: Entity,
-    private val ctx: GeneratorContext
-) : EntityGenerator {
+    entity: Entity,
+    ctx: GeneratorContext,
+    dataTypeResolver: DataTypeResolver
+) : EntityGenerator(entity, ctx, dataTypeResolver) {
     private val formatter = Formatter()
-    private val dataTypeResolver = SpringJavaDataTypeResolverImpl()
-    private val separator = FileSystems.getDefault().separator
 
     override fun getOutputFilePath(): Path =
         Paths.get(
@@ -32,7 +31,7 @@ class SpringJavaEntityGeneratorImpl(
             this.resolveClassName() + ".java"
         )
 
-    override fun generateEntity(): String {
+    override fun generate(): String {
         return formatter.formatSourceAndFixImports(
             buildString {
                 append("package ${ctx.getPackageName("entity")};")
@@ -43,28 +42,28 @@ class SpringJavaEntityGeneratorImpl(
 
                 append(
                     entity.fields.joinToString("\n") {
-                        generateField(it, ctx)
+                        generateField(it)
                     }
                 )
 
                 val referenced = ctx.getEntityFieldsThatReference(entity.name)
                 append(
                     referenced.joinToString("\n") {
-                        generateField(it, ctx)
+                        generateField(it)
                     }
                 )
 
                 append(
                     entity.fields.joinToString("\n") {
                         generateGetter(it) +
-                            generateSetter(it)
+                                generateSetter(it)
                     }
                 )
 
                 append(
                     referenced.joinToString("\n") {
                         generateGetter(it) +
-                            generateSetter(it)
+                                generateSetter(it)
                     }
                 )
 
@@ -73,7 +72,12 @@ class SpringJavaEntityGeneratorImpl(
         )
     }
 
-    override fun generateField(field: Field, ctx: GeneratorContext): String {
+    override fun getIdFields(): List<Field> =
+        entity.fields
+            .filter { it.attributes.any { attr -> attr.token.type == TokenType.ID } }
+            .toList()
+
+    override fun generateField(field: Field): String {
         return buildString {
             // @Todo handle many to many
             var type = field.type.value
@@ -113,7 +117,7 @@ class SpringJavaEntityGeneratorImpl(
         return buildString {
             append(
                 "public ${dataTypeResolver.resolveDataType(field)} get${
-                resolveVariableName(field).capitalize()
+                    resolveVariableName(field).capitalize()
                 }"
             )
             append("(){")

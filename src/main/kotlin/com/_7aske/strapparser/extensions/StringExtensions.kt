@@ -26,3 +26,16 @@ fun String.capitalize(): String = this.replaceFirstChar {
 fun String.uncapitalize(): String = this.replaceFirstChar {
     it.lowercase()
 }
+
+fun String.toKebabCase() =
+    buildString {
+        for (c in this) {
+            if (c.isUpperCase()) {
+                append('-')
+                append(c.lowercase())
+            } else {
+                append(c)
+            }
+        }
+    }
+

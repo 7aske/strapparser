@@ -8,7 +8,7 @@ import com._7aske.strapparser.parser.definitions.Field
 import com._7aske.strapparser.parser.definitions.ListFieldType
 import com._7aske.strapparser.parser.definitions.RefFieldType
 
-class GeneratorContext(private val entities: Map<String, Entity>, private val args: Args) {
+class GeneratorContext(private val entities: Map<String, Entity>, internal val args: Args) {
     fun getReferencedEntity(ref: RefFieldType): Entity? =
         entities[ref.value]
 
@@ -19,7 +19,7 @@ class GeneratorContext(private val entities: Map<String, Entity>, private val ar
             return packages.joinToString(".")
         }
 
-        return args.domain + packages.joinToString(".")
+        return args.domain + "." + packages.joinToString(".")
     }
 
     fun getEntityFieldsThatReference(entityName: String): List<Field> {
