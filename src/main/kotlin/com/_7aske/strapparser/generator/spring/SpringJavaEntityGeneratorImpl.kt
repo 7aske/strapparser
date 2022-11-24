@@ -56,14 +56,14 @@ class SpringJavaEntityGeneratorImpl(
                 append(
                     entity.fields.joinToString("\n") {
                         generateGetter(it) +
-                                generateSetter(it)
+                            generateSetter(it)
                     }
                 )
 
                 append(
                     referenced.joinToString("\n") {
                         generateGetter(it) +
-                                generateSetter(it)
+                            generateSetter(it)
                     }
                 )
 
@@ -117,7 +117,7 @@ class SpringJavaEntityGeneratorImpl(
         return buildString {
             append(
                 "public ${dataTypeResolver.resolveDataType(field)} get${
-                    resolveVariableName(field).capitalize()
+                resolveVariableName(field).capitalize()
                 }"
             )
             append("(){")

@@ -4,4 +4,4 @@ abstract class RepositoryGenerator(
     protected val entity: EntityGenerator,
     ctx: GeneratorContext,
     dataTypeResolver: DataTypeResolver
-): BaseGenerator(ctx, dataTypeResolver)
+) : BaseGenerator(ctx, dataTypeResolver)

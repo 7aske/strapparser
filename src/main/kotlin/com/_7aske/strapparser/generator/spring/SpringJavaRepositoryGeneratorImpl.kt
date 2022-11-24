@@ -16,32 +16,34 @@ class SpringJavaRepositoryGeneratorImpl(
     private val formatter = Formatter()
 
     override fun generate(): String {
-        return formatter.formatSource(buildString {
-            append("package ${ctx.getPackageName("repository")};")
+        return formatter.formatSource(
+            buildString {
+                append("package ${ctx.getPackageName("repository")};")
 
-            append("public interface ").append(resolveClassName())
-            append(" extends ")
-            append(
-                "org.springframework.data.jpa.repository.JpaRepository<${
-                    dataTypeResolver.resolveDataType(entity.resolveClassName())
-                }, ${
-                    dataTypeResolver.resolveDataType(entity.getIdFields()[0])
-                }>"
-            )
-
-            if (ctx.args.specification) {
-                append(", ")
+                append("public interface ").append(resolveClassName())
+                append(" extends ")
                 append(
-                    "org.springframework.data.jpa.repository.JpaSpecificationExecutor<${
+                    "org.springframework.data.jpa.repository.JpaRepository<${
+                    dataTypeResolver.resolveDataType(entity.resolveClassName())
+                    }, ${
+                    dataTypeResolver.resolveDataType(entity.getIdFields()[0])
+                    }>"
+                )
+
+                if (ctx.args.specification) {
+                    append(", ")
+                    append(
+                        "org.springframework.data.jpa.repository.JpaSpecificationExecutor<${
                         dataTypeResolver.resolveDataType(
                             entity.resolveClassName()
                         )
-                    }>"
-                )
+                        }>"
+                    )
+                }
+                append("{}")
+                println(this.toString())
             }
-            append("{}")
-            println(this.toString())
-        })
+        )
     }
 
     override fun resolveClassName(): String =
@@ -56,5 +58,4 @@ class SpringJavaRepositoryGeneratorImpl(
         "repository",
         this.resolveClassName() + ".java"
     )
-
 }

@@ -7,7 +7,7 @@ abstract class EntityGenerator(
     protected val entity: Entity,
     ctx: GeneratorContext,
     dataTypeResolver: DataTypeResolver
-): BaseGenerator(ctx, dataTypeResolver) {
+) : BaseGenerator(ctx, dataTypeResolver) {
 
     abstract fun generateSetter(field: Field): String
 
