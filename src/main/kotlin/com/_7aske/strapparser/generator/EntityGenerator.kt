@@ -13,8 +13,6 @@ abstract class EntityGenerator(
 
     abstract fun generateGetter(field: Field): String
 
-    abstract fun resolveVariableName(): String
-
     abstract fun resolveVariableName(field: Field): String
 
     abstract fun resolveFieldSetter(field: Field): String
@@ -24,4 +22,10 @@ abstract class EntityGenerator(
     abstract fun generateField(field: Field): String
 
     abstract fun getIdFields(): List<Field>
+
+    abstract fun resolveIdFieldPathVariables(): String
+
+    abstract fun resolveIdFieldVariables(): String
+
+    abstract fun resolveIdFieldsParameters(): String
 }

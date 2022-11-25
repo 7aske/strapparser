@@ -7,5 +7,6 @@ abstract class ControllerGenerator(
 ) : BaseGenerator(ctx, dataTypeResolver) {
 
     abstract fun generateEndpoints(): String
+
     abstract fun resolveEndpoint(): String
 }

@@ -8,11 +8,15 @@ import com._7aske.strapparser.parser.definitions.Field
 import com._7aske.strapparser.parser.definitions.ListFieldType
 import com._7aske.strapparser.parser.definitions.RefFieldType
 
-class GeneratorContext(private val entities: Map<String, Entity>, internal val args: Args) {
+class GeneratorContext(
+    private val entities: Map<String, Entity>,
+    internal val args: Args
+) {
     fun getReferencedEntity(ref: RefFieldType): Entity? =
         entities[ref.value]
 
-    fun getOutputLocation() = args.output
+    fun getOutputLocation() =
+        args.output.replaceFirst("~", System.getProperty("user.home"))
 
     fun getPackageName(vararg packages: String): String {
         if (args.domain.isEmpty()) {

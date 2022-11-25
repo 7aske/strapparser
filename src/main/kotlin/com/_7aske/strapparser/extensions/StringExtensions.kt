@@ -27,10 +27,10 @@ fun String.uncapitalize(): String = this.replaceFirstChar {
     it.lowercase()
 }
 
-fun String.toKebabCase() =
+fun String.toKebabCase(): String =
     buildString {
-        for (c in this) {
-            if (c.isUpperCase()) {
+        for ((i, c) in this@toKebabCase.withIndex()) {
+            if (c.isUpperCase() && i != 0) {
                 append('-')
                 append(c.lowercase())
             } else {

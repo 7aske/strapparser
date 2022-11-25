@@ -34,8 +34,8 @@ class SpringJavaEntityGeneratorImpl(
     override fun generate(): String {
         return formatter.formatSourceAndFixImports(
             buildString {
-                append("package ${ctx.getPackageName("entity")};")
-                append("@javax.persistence.Table @javax.persistence.Entity\n")
+                append("package ${resolvePackage()};")
+                append("@jakarta.persistence.Table @jakarta.persistence.Entity\n")
                 append("public class ")
                     .append(resolveClassName())
                 append("{")
@@ -83,23 +83,25 @@ class SpringJavaEntityGeneratorImpl(
             var type = field.type.value
 
             if (field.attributes.any { it.token.type == TokenType.ID }) {
-                append("@javax.persistence.Id\n")
+                append("@jakarta.persistence.Id\n")
             }
 
             if (field.attributes.any { it.token.type == TokenType.SERIAL }) {
-                append("@javax.persistence.GeneratedValue(strategy = javax.persistence.GenerationType.IDENTITY)\n")
+                append("@jakarta.persistence.GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)\n")
             }
 
             if (field.isRef()) {
-                append("@javax.persistence.ManyToOne\n")
-                append("@javax.persistence.JoinColumn\n")
+                append("@jakarta.persistence.ManyToOne\n")
+                append("@jakarta.persistence.JoinColumn\n")
+                append("private $type ${resolveVariableName(field)};\n")
             } else if (field.isList()) {
-                append("@javax.persistence.OneToMany\n")
+                append("@jakarta.persistence.OneToMany\n")
+                append("private java.util.List<$type> ${resolveVariableName(field)};\n")
             } else {
-                append("@javax.persistence.Column\n")
+                append("@jakarta.persistence.Column\n")
                 type = dataTypeResolver.resolveDataType(type)
+                append("private $type ${resolveVariableName(field)};\n")
             }
-            append("private $type ${resolveVariableName(field)};\n")
         }
     }
 
@@ -129,6 +131,12 @@ class SpringJavaEntityGeneratorImpl(
     override fun resolveClassName(): String =
         entity.name.capitalize()
 
+    override fun resolvePackage(): String =
+        ctx.getPackageName("entity")
+
+    override fun resolveFQCN(): String =
+        resolvePackage() + "." + resolveClassName()
+
     override fun resolveVariableName(): String =
         entity.name.uncapitalize()
 
@@ -147,4 +155,25 @@ class SpringJavaEntityGeneratorImpl(
     override fun resolveFieldGetter(field: Field): String {
         TODO("Not yet implemented")
     }
+
+    override fun resolveIdFieldPathVariables() =
+        getIdFields().joinToString("/") {
+            "{${it.name}}"
+        }
+
+    override fun resolveIdFieldVariables() =
+        getIdFields().joinToString(", ") {
+            it.name
+        }
+
+    override fun resolveIdFieldsParameters() =
+        getIdFields().joinToString(", ") {
+            buildString {
+                append(
+                    dataTypeResolver.resolveDataType(it)
+                )
+                append(" ")
+                append(it.name)
+            }
+        }
 }

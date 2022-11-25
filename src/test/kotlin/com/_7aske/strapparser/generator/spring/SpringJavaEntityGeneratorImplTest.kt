@@ -56,6 +56,20 @@ internal class SpringJavaEntityGeneratorImplTest {
         println(
             Files.readString(
                 testDir
+                    .resolve("src/main/java/com/_7aske/backend/service/UserService.java")
+            )
+        )
+
+        println(
+            Files.readString(
+                testDir
+                    .resolve("src/main/java/com/_7aske/backend/service/impl/UserServiceImpl.java")
+            )
+        )
+
+        println(
+            Files.readString(
+                testDir
                     .resolve("src/main/java/com/_7aske/backend/controller/UserController.java")
             )
         )

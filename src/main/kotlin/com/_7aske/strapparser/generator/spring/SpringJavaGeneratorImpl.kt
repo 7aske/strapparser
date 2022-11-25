@@ -16,11 +16,13 @@ class SpringJavaGeneratorImpl : Generator {
         val ctx = GeneratorContext(entities, args)
 
         entities.values.forEach {
+            // Entity
             val entityGenerator = SpringJavaEntityGeneratorImpl(it, ctx, dataTypeResolver)
             val entityOutPath = entityGenerator.getOutputFilePath()
 
             writeString(entityOutPath, entityGenerator.generate())
 
+            // Repository
             val repositoryGenerator = SpringJavaRepositoryGeneratorImpl(
                 entityGenerator,
                 ctx,
@@ -30,6 +32,29 @@ class SpringJavaGeneratorImpl : Generator {
 
             writeString(repositoryOutPath, repositoryGenerator.generate())
 
+            // Service
+            val serviceGenerator = SpringJavaServiceGeneratorImpl(
+                entityGenerator,
+                ctx,
+                dataTypeResolver
+            )
+            val serviceOutPath = serviceGenerator.getOutputFilePath()
+
+            writeString(serviceOutPath, serviceGenerator.generate())
+
+            // ServiceImpl
+            val serviceImplGenerator = SpringJavaServiceImplGeneratorImpl(
+                repositoryGenerator,
+                serviceGenerator,
+                entityGenerator,
+                ctx,
+                dataTypeResolver
+            )
+            val serviceImplOutPath = serviceImplGenerator.getOutputFilePath()
+
+            writeString(serviceImplOutPath, serviceImplGenerator.generate())
+
+            // Controller
             val controllerGenerator = SpringJavaControllerGeneratorImpl(
                 entityGenerator,
                 ctx,
