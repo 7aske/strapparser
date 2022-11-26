@@ -64,19 +64,30 @@ class SpringJavaEntityGeneratorImpl(
                     append(
                         entity.fields.joinToString("\n") {
                             generateGetter(it) +
-                                generateSetter(it)
+                                    generateSetter(it)
                         }
                     )
 
                     append(
                         referenced.joinToString("\n") {
                             generateGetter(it) +
-                                generateSetter(it)
+                                    generateSetter(it)
                         }
                     )
                 }
 
+                if (hasCompositeId()) {
+                    val idFields = getIdFields()
+
+                    append(
+                        "public static final class ${resolveClassName()}Id {"
+                    )
+
+                    append("}")
+                }
+
                 append("}")
+                println(this.toString())
             }
         )
     }
@@ -114,7 +125,13 @@ class SpringJavaEntityGeneratorImpl(
                     append(Lombok.ToStringExclude)
                 }
                 append("@jakarta.persistence.OneToMany\n")
-                append("private java.util.List<$type> ${resolveVariableName(field)};\n")
+                append(
+                    "private java.util.List<$type> ${
+                        resolveVariableName(
+                            field
+                        )
+                    };\n"
+                )
             } else {
                 append("@jakarta.persistence.Column\n")
                 type = dataTypeResolver.resolveDataType(type)
@@ -137,7 +154,7 @@ class SpringJavaEntityGeneratorImpl(
         return buildString {
             append(
                 "public ${dataTypeResolver.resolveDataType(field)} get${
-                resolveVariableName(field).capitalize()
+                    resolveVariableName(field).capitalize()
                 }"
             )
             append("(){")
@@ -186,4 +203,7 @@ class SpringJavaEntityGeneratorImpl(
                 append(it.name)
             }
         }
+
+    override fun hasCompositeId() =
+        getIdFields().isNotEmpty()
 }

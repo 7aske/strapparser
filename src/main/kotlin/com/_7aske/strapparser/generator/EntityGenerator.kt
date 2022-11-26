@@ -24,4 +24,6 @@ abstract class EntityGenerator(
     abstract fun resolveIdFieldVariables(): String
 
     abstract fun resolveIdFieldsParameters(): String
+
+    abstract fun hasCompositeId(): Boolean
 }
