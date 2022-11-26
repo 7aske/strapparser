@@ -10,6 +10,9 @@ open class FieldType(
 class IncompleteRefFieldType(token: Token, value: String) :
     FieldType(token, value)
 
+class IncompleteListFieldType(token: Token, value: String) :
+    FieldType(token, value)
+
 class RefFieldType(token: Token, value: String) : FieldType(token, value)
 
 class ListFieldType(token: Token, value: String) : FieldType(token, value)

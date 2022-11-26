@@ -20,7 +20,7 @@ internal class SpringJavaEntityGeneratorImplTest {
                
             entity User
                 field `id` int serial id
-                field username string
+                field `username` string
         """.trimIndent()
 
         Files.writeString(testDir.resolve("test.strap"), text)

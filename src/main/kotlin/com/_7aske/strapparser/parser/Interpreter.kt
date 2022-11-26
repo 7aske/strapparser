@@ -10,7 +10,7 @@ class Interpreter(
 ) {
     // interpretation result
     private val entities = mutableMapOf<String, Entity>()
-    private val incompleteRefs = mutableListOf<IncompleteRefFieldType>()
+    private val incompleteRefs = mutableListOf<FieldType>()
 
     fun interpret(): List<Entity> {
         for (ast in astList) {
@@ -34,6 +34,18 @@ class Interpreter(
                         }
 
                         it.type = RefFieldType(
+                            it.token,
+                            it.type.value,
+                        )
+                    }
+
+                    if (it.type is IncompleteListFieldType) {
+                        check(entities.contains(it.type.value)) {
+                            printLocation(text, it.type.token)
+                            "Undefined reference to entity '${it.type.value}'"
+                        }
+
+                        it.type = ListFieldType(
                             it.token,
                             it.type.value,
                         )
@@ -98,10 +110,24 @@ class Interpreter(
                 }
             }
 
-            is AstListNode -> ListFieldType(
-                type.token,
-                type.typeNode.token.value
-            )
+            is AstListNode -> {
+                val reference = type.typeNode.token.value
+                if (entities.contains(reference)) {
+                    return ListFieldType(
+                        type.typeNode.token,
+                        reference,
+                    )
+                } else {
+                    val incompleteType = IncompleteListFieldType(
+                        type.typeNode.token,
+                        reference
+                    )
+
+                    incompleteRefs.add(incompleteType)
+
+                    return incompleteType
+                }
+            }
 
             is AstIdentifierNode -> DataFieldType(type.token, type.token.value)
             else -> {

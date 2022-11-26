@@ -33,6 +33,18 @@ class SpringJavaEntityGeneratorImpl(
         )
 
     override fun generate(): String {
+        val implements = mutableListOf<String>()
+        val extends = mutableListOf<String>()
+        if (ctx.args.auditable) {
+            extends.add("${getPackage()}.Auditable")
+        } else {
+            implements.add("java.io.Serializable")
+        }
+
+        if (entity.isUserDetails() && ctx.args.security) {
+            implements.add("org.springframework.security.core.userdetails.UserDetails")
+        }
+
         return formatter.formatSourceAndFixImports(
             buildString {
                 append("package ${getPackage()};")
@@ -45,10 +57,16 @@ class SpringJavaEntityGeneratorImpl(
                 }
                 append("public class ")
                     .append(getClassName())
-                if (ctx.args.auditable) {
-                    append(" extends ${getPackage()}.Auditable")
-                } else {
-                    append(" implements java.io.Serializable")
+
+                check(extends.size <= 1) {
+                    "Java classes can only extend one base class"
+                }
+                if (extends.isNotEmpty()) {
+                    append(" extends ${extends[0]}")
+                }
+                if (implements.isNotEmpty()) {
+                    append(" implements ")
+                    append(implements.joinToString(","))
                 }
                 append("{")
 
@@ -60,11 +78,7 @@ class SpringJavaEntityGeneratorImpl(
                     append(" id;")
                 }
 
-                val toGenerate: List<Field> = if (hasCompositeId()) {
-                    entity.fields.filter { !it.isId() }
-                } else {
-                    entity.fields
-                }
+                val toGenerate: List<Field> = getFieldsToGenerate()
 
                 append(
                     toGenerate.joinToString("\n") {
@@ -95,14 +109,72 @@ class SpringJavaEntityGeneratorImpl(
                     )
                 }
 
+                if (entity.isUserDetails() && ctx.args.security) {
+                    append(generateUserDetailsGettersAndSetters())
+                }
+
                 if (hasCompositeId()) {
                     append(generateCompositeId())
                 }
 
                 append("}")
-                println(this.toString())
             }
         )
+    }
+
+    private fun getFieldsToGenerate() = if (hasCompositeId()) {
+        entity.fields
+            .filter { !it.isId() }
+            .filter {
+                if (entity.isUserDetails() && ctx.args.security) {
+                    !it.isOfType(TokenType.USERNAME) && !it.isOfType(
+                        TokenType.PASSWORD
+                    )
+                }
+                true
+            }
+    } else {
+        entity.fields
+    }
+
+    private fun generateUserDetailsGettersAndSetters(): String {
+        return """
+              @Override
+              public java.util.Collection<? extends org.springframework.security.core.GrantedAuthority> getAuthorities() {
+                return java.util.Collections.emptyList();
+              }
+
+              @Override
+              public String getUsername() {
+                return ${entity.getUsernameField()?.name ?: "null" };
+              }
+              
+              @Override
+              public String getPassword() {
+                return ${getPasswordField()};
+              }
+
+              @Override
+              public boolean isAccountNonExpired() {
+                return isEnabled();
+              }
+
+              @Override
+              public boolean isAccountNonLocked() {
+                return isEnabled();
+              }
+
+              @Override
+              public boolean isCredentialsNonExpired() {
+                return isEnabled();
+              }
+
+              @Override
+              public boolean isEnabled() {
+                return true;
+              }
+
+        """.trimIndent()
     }
 
     private fun generateCompositeId(): String {
@@ -296,4 +368,10 @@ class SpringJavaEntityGeneratorImpl(
 
     override fun hasCompositeId() =
         getIdFields().size > 1
+
+    private fun getPasswordField(): String {
+        return entity.fields.filter { it.isOfType(TokenType.PASSWORD) }
+            .map { it.name }
+            .lastOrNull() ?: "null"
+    }
 }

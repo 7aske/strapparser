@@ -34,6 +34,11 @@ class Parser(private val text: String, tokens: List<Token>) :
         val identifierToken = getOrThrowExpectedToken(TokenType.IDENTIFIER)
         val identifierNode = AstIdentifierNode(identifierToken)
 
+        val attributeNodes = mutableListOf<AstNode>()
+        while (isPeekOfEntityAttributeType()) {
+            attributeNodes.add(AstAttributeNode(next()))
+        }
+
         getOrThrowUnexpectedToken(TokenType.NEWLINE)
 
         val fields = mutableListOf<AstFieldNode>()
@@ -44,10 +49,6 @@ class Parser(private val text: String, tokens: List<Token>) :
             skip(TokenType.NEWLINE)
         }
 
-        val attributeNodes = mutableListOf<AstNode>()
-        while (isPeekOfTypeAttribute())
-            attributeNodes.add(AstAttributeNode(next()))
-
         return AstEntityNode(
             entityToken,
             identifierNode,
@@ -56,8 +57,11 @@ class Parser(private val text: String, tokens: List<Token>) :
         )
     }
 
-    private fun isPeekOfTypeAttribute(): Boolean =
-        isPeekOfType(*TokenType.attributeTypes)
+    private fun isPeekOfEntityAttributeType(): Boolean =
+        isPeekOfType(*TokenType.entityAttributeTypes)
+
+    private fun isPeekOfFieldAttributeType(): Boolean =
+        isPeekOfType(*TokenType.fieldAttributeTypes)
 
     private fun parseFieldNode(): AstFieldNode {
         val fieldToken = getOrThrowExpectedToken(TokenType.FIELD)
@@ -74,8 +78,10 @@ class Parser(private val text: String, tokens: List<Token>) :
             parseTypeNode()
         }
 
+        // @Todo: validate username and password attributes to be
+        // of type string
         val attributeNodes = mutableListOf<AstNode>()
-        while (isPeekOfTypeAttribute())
+        while (isPeekOfFieldAttributeType())
             attributeNodes.add(AstAttributeNode(next()))
 
         return AstFieldNode(fieldToken, identifierNode, type, attributeNodes)

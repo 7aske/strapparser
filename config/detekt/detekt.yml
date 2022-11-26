@@ -119,7 +119,7 @@ complexity:
     threshold: 600
   LongMethod:
     active: true
-    threshold: 72
+    threshold: 100
   LongParameterList:
     active: true
     functionThreshold: 6
@@ -521,7 +521,7 @@ style:
     values:
       - 'FIXME:'
       - 'STOPSHIP:'
-      - 'TODO:'
+      - 'NOPUSH:'
     allowedPatterns: ''
     customMessage: ''
   ForbiddenImport:

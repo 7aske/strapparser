@@ -4,7 +4,7 @@ import com._7aske.strapparser.parser.definitions.Entity
 import com._7aske.strapparser.parser.definitions.Field
 
 abstract class EntityGenerator(
-    protected val entity: Entity,
+    internal val entity: Entity,
     ctx: GeneratorContext,
     dataTypeResolver: DataTypeResolver
 ) : BaseGenerator(ctx, dataTypeResolver) {
@@ -30,5 +30,6 @@ abstract class EntityGenerator(
     abstract fun getIdClassName(): String
 
     abstract fun getIdFQCN(): String
+
     abstract fun getCompositeIdFieldVariables(): String
 }

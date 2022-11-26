@@ -1,5 +1,6 @@
 package com._7aske.strapparser.generator.spring
 
+import com._7aske.strapparser.extensions.capitalize
 import com._7aske.strapparser.extensions.uncapitalize
 import com._7aske.strapparser.generator.DataTypeResolver
 import com._7aske.strapparser.generator.EntityGenerator
@@ -41,7 +42,17 @@ class SpringJavaRepositoryGeneratorImpl(
                         }>"
                     )
                 }
-                append("{}")
+                append("{")
+                if (entity.entity.isUserDetails() && ctx.args.security) {
+                    val usernameField = entity.entity.getUsernameField()
+                    if (usernameField != null) {
+                        append(
+                            "java.util.Optional<${entity.getFQCN()}> " +
+                                "findBy${usernameField.name.capitalize()}(String username);"
+                        )
+                    }
+                }
+                append("}")
             }
         )
     }

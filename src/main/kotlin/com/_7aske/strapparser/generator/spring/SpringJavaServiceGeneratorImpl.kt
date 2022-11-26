@@ -28,11 +28,21 @@ class SpringJavaServiceGeneratorImpl(
             this.getClassName() + ".java"
         )
 
-    override fun generate(): String =
-        formatter.formatSource(
+    override fun generate(): String {
+        val extends = mutableListOf<String>()
+        if (entity.entity.isUserDetails() && ctx.args.security) {
+            extends.add("org.springframework.security.core.userdetails.UserDetailsService")
+        }
+
+        return formatter.formatSource(
             buildString {
                 append("package ${getPackage()};")
-                append("public interface ${getClassName()} {")
+                append("public interface ${getClassName()}")
+                if (extends.isNotEmpty()) {
+                    append(" extends ")
+                    append(extends.joinToString())
+                }
+                append(" {")
                 append("$SPRING_DOMAIN_PACKAGE.Page<${entity.getFQCN()}> ")
                 append("findAll($SPRING_DOMAIN_PACKAGE.Pageable page);")
                 append("${entity.getFQCN()} findById(${entity.getIdFieldsAsArguments()});")
@@ -42,6 +52,7 @@ class SpringJavaServiceGeneratorImpl(
                 append("}")
             }
         )
+    }
 
     override fun getVariableName(): String =
         getClassName().uncapitalize()

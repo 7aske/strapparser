@@ -10,6 +10,9 @@ class Field(
     val attributes: List<Attribute>
 ) : Definition(token) {
 
+    fun isOfType(type: TokenType): Boolean =
+        attributes.any { it.token.type == type }
+
     fun isId() = attributes.any { it.token.type == TokenType.ID }
 
     fun isRef() = type is RefFieldType

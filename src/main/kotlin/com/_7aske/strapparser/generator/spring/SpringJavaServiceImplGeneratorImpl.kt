@@ -1,5 +1,6 @@
 package com._7aske.strapparser.generator.spring
 
+import com._7aske.strapparser.extensions.capitalize
 import com._7aske.strapparser.extensions.uncapitalize
 import com._7aske.strapparser.generator.*
 import com._7aske.strapparser.generator.java.Lombok
@@ -60,7 +61,33 @@ class SpringJavaServiceImplGeneratorImpl(
             append(generateCreateMethods())
             append(generateUpdateMethods())
             append(generateDeleteMethods())
+            if (entity.entity.isUserDetails() && ctx.args.security) {
+                append(generateUserDetailsLoadByUsername())
+            }
         }
+
+    private fun generateUserDetailsLoadByUsername(): String {
+        return buildString {
+            append(
+                """
+              @Override
+              public org.springframework.security.core.userdetails.UserDetails loadUserByUsername(String username) throws org.springframework.security.core.userdetails.UsernameNotFoundException {
+                """.trimIndent()
+            )
+            val usernameField = entity.entity.getUsernameField()
+            if (usernameField == null) {
+                append("throw new IllegalStateException(\"Not yet implemented\");")
+            } else {
+                append(
+                    """
+                return ${repository.getVariableName()}.findBy${entity.entity.getUsernameField()?.name?.capitalize()}(username)
+                    .orElseThrow(() -> new org.springframework.security.core.userdetails.UsernameNotFoundException(String.format("User with username %s not found", username)));
+                    """.trimIndent()
+                )
+            }
+            append("}")
+        }
+    }
 
     private fun generateDeleteMethods(): String =
         buildString {

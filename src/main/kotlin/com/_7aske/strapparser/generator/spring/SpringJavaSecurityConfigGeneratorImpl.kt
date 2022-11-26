@@ -82,7 +82,6 @@ class SpringJavaSecurityConfigGeneratorImpl(
             append(generateAuthenticationFilterBean())
             append(generateAuthorizationFilterBean())
             append("}")
-            print(this.toString())
         }
     )
 
