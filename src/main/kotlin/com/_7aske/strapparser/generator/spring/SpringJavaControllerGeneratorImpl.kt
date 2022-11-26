@@ -95,7 +95,7 @@ class SpringJavaControllerGeneratorImpl(
         append("public ").append("$RESPONSE_ENTITY_FQCN<$SPRING_DOMAIN_PACKAGE.Page<${entity.resolveFQCN()}>>")
         append(
             "getAll${
-                entity.resolveVariableName().plural().capitalize()
+            entity.resolveVariableName().plural().capitalize()
             }("
         )
         append(SPRING_DOMAIN_PACKAGE).append(".Pageable page")
@@ -107,14 +107,14 @@ class SpringJavaControllerGeneratorImpl(
         append("public ").append("$RESPONSE_ENTITY_FQCN<${entity.resolveFQCN()}>")
         append(
             "get${
-                entity.resolveVariableName().capitalize()
+            entity.resolveVariableName().capitalize()
             }ById("
         )
         append(resolveIdFieldsParameters())
         append(") {")
         append(
             "return $RESPONSE_ENTITY_FQCN.ok($serviceVarName.findById(${
-                entity.resolveIdFieldVariables()
+            entity.resolveIdFieldVariables()
             }));"
         )
         append("}")
@@ -125,7 +125,7 @@ class SpringJavaControllerGeneratorImpl(
         append("public ").append("$RESPONSE_ENTITY_FQCN<${entity.resolveFQCN()}>")
         append(
             "save${
-                entity.resolveVariableName().capitalize()
+            entity.resolveVariableName().capitalize()
             }("
         )
         append("@$SPRING_BIND_PACKAGE.RequestBody ").append(entity.resolveFQCN())
@@ -148,7 +148,7 @@ class SpringJavaControllerGeneratorImpl(
         append("public ").append("$RESPONSE_ENTITY_FQCN<${entity.resolveFQCN()}>")
         append(
             "update${
-                entity.resolveVariableName().capitalize()
+            entity.resolveVariableName().capitalize()
             }("
         )
         append("@$SPRING_BIND_PACKAGE.RequestBody ").append(entity.resolveFQCN())
@@ -156,7 +156,7 @@ class SpringJavaControllerGeneratorImpl(
         append(") {")
         append(
             "return $RESPONSE_ENTITY_FQCN.ok($serviceVarName.update(${
-                entity.resolveVariableName()
+            entity.resolveVariableName()
             }));"
         )
         append("}")
@@ -167,14 +167,14 @@ class SpringJavaControllerGeneratorImpl(
         append("public ").append("$RESPONSE_ENTITY_FQCN<Void>")
         append(
             "delete${
-                entity.resolveVariableName().capitalize()
+            entity.resolveVariableName().capitalize()
             }ById("
         )
         append(resolveIdFieldsParameters())
         append(") {")
         append(
             "$serviceVarName.deleteById(${
-                entity.resolveIdFieldVariables()
+            entity.resolveIdFieldVariables()
             });"
         )
         append("return $RESPONSE_ENTITY_FQCN.noContent().build();")
@@ -201,7 +201,6 @@ class SpringJavaControllerGeneratorImpl(
             }
         }
 }
-
 
 class Mapping private constructor(
     private val path: String,

@@ -10,8 +10,8 @@ class Lombok(private val annotation: String, private vararg val params: String) 
         val EqualsAndHashCodeInclude = Lombok("EqualsAndHashCode.Include")
     }
     override fun toString(): String = if (params.isEmpty()) {
-            "@lombok.$annotation\n"
-        } else {
-            "@lombok.$annotation(${params.joinToString(", ")})\n"
-        }
+        "@lombok.$annotation\n"
+    } else {
+        "@lombok.$annotation(${params.joinToString(", ")})\n"
+    }
 }

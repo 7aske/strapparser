@@ -64,14 +64,14 @@ class SpringJavaEntityGeneratorImpl(
                     append(
                         entity.fields.joinToString("\n") {
                             generateGetter(it) +
-                                    generateSetter(it)
+                                generateSetter(it)
                         }
                     )
 
                     append(
                         referenced.joinToString("\n") {
                             generateGetter(it) +
-                                    generateSetter(it)
+                                generateSetter(it)
                         }
                     )
                 }
