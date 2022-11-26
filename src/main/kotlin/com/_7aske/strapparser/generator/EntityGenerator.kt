@@ -15,10 +15,6 @@ abstract class EntityGenerator(
 
     abstract fun resolveVariableName(field: Field): String
 
-    abstract fun resolveFieldSetter(field: Field): String
-
-    abstract fun resolveFieldGetter(field: Field): String
-
     abstract fun generateField(field: Field): String
 
     abstract fun getIdFields(): List<Field>

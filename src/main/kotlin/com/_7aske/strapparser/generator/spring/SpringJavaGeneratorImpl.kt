@@ -56,7 +56,7 @@ class SpringJavaGeneratorImpl : Generator {
 
             // Controller
             val controllerGenerator = SpringJavaControllerGeneratorImpl(
-                entityGenerator,
+                serviceGenerator,
                 ctx,
                 dataTypeResolver
             )

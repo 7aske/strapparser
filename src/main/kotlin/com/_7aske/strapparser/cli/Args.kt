@@ -4,6 +4,11 @@ import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
 
 class Args(parser: ArgParser) {
+    val lombok by parser.flagging(
+        "-l", "--lombok",
+        help = "use lombok (only for java)"
+    )
+
     val entity by parser.flagging(
         "-E", "--entity",
         help = "generate entities"

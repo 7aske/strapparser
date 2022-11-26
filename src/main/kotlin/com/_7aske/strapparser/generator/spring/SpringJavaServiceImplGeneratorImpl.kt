@@ -2,6 +2,7 @@ package com._7aske.strapparser.generator.spring
 
 import com._7aske.strapparser.extensions.uncapitalize
 import com._7aske.strapparser.generator.*
+import com._7aske.strapparser.generator.java.Lombok
 import com.google.googlejavaformat.java.Formatter
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -32,15 +33,22 @@ class SpringJavaServiceImplGeneratorImpl(
             buildString {
                 append("package ${resolvePackage()};")
                 append("@org.springframework.stereotype.Service\n")
+                if (ctx.args.lombok) {
+                    append(Lombok.RequiredArgsConstructor)
+                }
                 append("public class ${resolveClassName()} implements ")
                 append(service.resolveFQCN()).append(" {")
                 append("private final ${repository.resolveFQCN()} ${repository.resolveVariableName()};")
-                append("public ").append(resolveClassName()).append("(")
-                append(repository.resolveFQCN()).append(" ")
-                    .append(repository.resolveVariableName())
-                append(") {")
-                append("this.${repository.resolveVariableName()} = ${repository.resolveVariableName()};")
-                append("}")
+
+                if (!ctx.args.lombok) {
+                    append("public ").append(resolveClassName()).append("(")
+                    append(repository.resolveFQCN()).append(" ")
+                        .append(repository.resolveVariableName())
+                    append(") {")
+                    append("this.${repository.resolveVariableName()} = ${repository.resolveVariableName()};")
+                    append("}")
+                }
+
                 append(generateBody())
                 append("}")
             }

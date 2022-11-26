@@ -6,6 +6,7 @@ import com._7aske.strapparser.extensions.uncapitalize
 import com._7aske.strapparser.generator.DataTypeResolver
 import com._7aske.strapparser.generator.EntityGenerator
 import com._7aske.strapparser.generator.GeneratorContext
+import com._7aske.strapparser.generator.java.Lombok
 import com._7aske.strapparser.parser.TokenType
 import com._7aske.strapparser.parser.definitions.Entity
 import com._7aske.strapparser.parser.definitions.Field
@@ -35,7 +36,13 @@ class SpringJavaEntityGeneratorImpl(
         return formatter.formatSourceAndFixImports(
             buildString {
                 append("package ${resolvePackage()};")
-                append("@jakarta.persistence.Table @jakarta.persistence.Entity\n")
+                append("@jakarta.persistence.Table\n")
+                append("@jakarta.persistence.Entity\n")
+                if (ctx.args.lombok) {
+                    append(Lombok.Data)
+                    append(Lombok.RequiredArgsConstructor)
+                    append(Lombok.EqualsAndHashCode)
+                }
                 append("public class ")
                     .append(resolveClassName())
                 append("{")
@@ -53,19 +60,21 @@ class SpringJavaEntityGeneratorImpl(
                     }
                 )
 
-                append(
-                    entity.fields.joinToString("\n") {
-                        generateGetter(it) +
-                            generateSetter(it)
-                    }
-                )
+                if (!ctx.args.lombok) {
+                    append(
+                        entity.fields.joinToString("\n") {
+                            generateGetter(it) +
+                                    generateSetter(it)
+                        }
+                    )
 
-                append(
-                    referenced.joinToString("\n") {
-                        generateGetter(it) +
-                            generateSetter(it)
-                    }
-                )
+                    append(
+                        referenced.joinToString("\n") {
+                            generateGetter(it) +
+                                    generateSetter(it)
+                        }
+                    )
+                }
 
                 append("}")
             }
@@ -83,6 +92,9 @@ class SpringJavaEntityGeneratorImpl(
             var type = field.type.value
 
             if (field.attributes.any { it.token.type == TokenType.ID }) {
+                if (ctx.args.lombok) {
+                    append(Lombok.EqualsAndHashCodeInclude)
+                }
                 append("@jakarta.persistence.Id\n")
             }
 
@@ -91,10 +103,16 @@ class SpringJavaEntityGeneratorImpl(
             }
 
             if (field.isRef()) {
+                if (ctx.args.lombok) {
+                    append(Lombok.ToStringExclude)
+                }
                 append("@jakarta.persistence.ManyToOne\n")
                 append("@jakarta.persistence.JoinColumn\n")
                 append("private $type ${resolveVariableName(field)};\n")
             } else if (field.isList()) {
+                if (ctx.args.lombok) {
+                    append(Lombok.ToStringExclude)
+                }
                 append("@jakarta.persistence.OneToMany\n")
                 append("private java.util.List<$type> ${resolveVariableName(field)};\n")
             } else {
@@ -146,14 +164,6 @@ class SpringJavaEntityGeneratorImpl(
         } else {
             field.name
         }
-    }
-
-    override fun resolveFieldSetter(field: Field): String {
-        TODO("Not yet implemented")
-    }
-
-    override fun resolveFieldGetter(field: Field): String {
-        TODO("Not yet implemented")
     }
 
     override fun resolveIdFieldPathVariables() =
