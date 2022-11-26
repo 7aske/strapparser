@@ -64,21 +64,19 @@ class SpringJavaEntityGeneratorImpl(
                     append(
                         entity.fields.joinToString("\n") {
                             generateGetter(it) +
-                                    generateSetter(it)
+                                generateSetter(it)
                         }
                     )
 
                     append(
                         referenced.joinToString("\n") {
                             generateGetter(it) +
-                                    generateSetter(it)
+                                generateSetter(it)
                         }
                     )
                 }
 
                 if (hasCompositeId()) {
-                    val idFields = getIdFields()
-
                     append(
                         "public static final class ${resolveClassName()}Id {"
                     )
@@ -127,9 +125,9 @@ class SpringJavaEntityGeneratorImpl(
                 append("@jakarta.persistence.OneToMany\n")
                 append(
                     "private java.util.List<$type> ${
-                        resolveVariableName(
-                            field
-                        )
+                    resolveVariableName(
+                        field
+                    )
                     };\n"
                 )
             } else {
@@ -154,7 +152,7 @@ class SpringJavaEntityGeneratorImpl(
         return buildString {
             append(
                 "public ${dataTypeResolver.resolveDataType(field)} get${
-                    resolveVariableName(field).capitalize()
+                resolveVariableName(field).capitalize()
                 }"
             )
             append("(){")
