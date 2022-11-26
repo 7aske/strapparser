@@ -45,6 +45,11 @@ class SpringJavaEntityGeneratorImpl(
                 }
                 append("public class ")
                     .append(getClassName())
+                if (ctx.args.auditable) {
+                    append(" extends ${getPackage()}.Auditable")
+                } else {
+                    append(" implements java.io.Serializable")
+                }
                 append("{")
 
                 // This can be refactored to not check composite id twice

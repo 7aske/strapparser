@@ -4,7 +4,6 @@ import com._7aske.strapparser.parser.ast.AstEntityNode
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.lang.IllegalStateException
 
 internal class ParserTest {
 
@@ -32,10 +31,19 @@ internal class ParserTest {
         val ast = parser.parse()
 
         assertEquals(TokenType.ENTITY, ast[0].token.type)
-        assertEquals(TokenType.FIELD, (ast[0] as AstEntityNode).fields[0].token.type)
+        assertEquals(
+            TokenType.FIELD,
+            (ast[0] as AstEntityNode).fields[0].token.type
+        )
         assertEquals(TokenType.ENTITY, ast[1].token.type)
-        assertEquals(TokenType.FIELD, (ast[1] as AstEntityNode).fields[0].token.type)
-        assertEquals(TokenType.FIELD, (ast[1] as AstEntityNode).fields[1].token.type)
+        assertEquals(
+            TokenType.FIELD,
+            (ast[1] as AstEntityNode).fields[0].token.type
+        )
+        assertEquals(
+            TokenType.FIELD,
+            (ast[1] as AstEntityNode).fields[1].token.type
+        )
     }
 
     @Test

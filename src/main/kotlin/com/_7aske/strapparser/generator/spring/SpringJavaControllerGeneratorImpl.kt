@@ -77,7 +77,7 @@ class SpringJavaControllerGeneratorImpl(
         getClassName().uncapitalize()
 
     override fun resolveEndpoint(): String =
-        "/api/v1/" + entity.getClassName()
+        "api/v1/" + entity.getClassName()
             .toKebabCase()
             .uncapitalize()
             .plural()
@@ -220,6 +220,6 @@ class Mapping private constructor(
         if (path.isEmpty())
             return prefix + "\n"
 
-        return "$prefix(\"$path\")\n"
+        return "$prefix(\"/$path\")\n"
     }
 }

@@ -9,6 +9,16 @@ class Args(parser: ArgParser) {
         help = "use lombok (only for java)"
     )
 
+    val auditable by parser.flagging(
+        "-a", "--auditable",
+        help = "add auditing superclass"
+    )
+
+    val security by parser.flagging(
+        "-s", "--security",
+        help = "generate security implementation"
+    )
+
     val entity by parser.flagging(
         "-E", "--entity",
         help = "generate entities"
@@ -30,7 +40,7 @@ class Args(parser: ArgParser) {
     )
 
     val specification by parser.flagging(
-        "--specification",
+        "-p", "--specification",
         help = "repositories will extend JPA Specification"
     )
 

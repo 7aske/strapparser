@@ -2,7 +2,7 @@ package com._7aske.strapparser.parser.extensions
 
 import com._7aske.strapparser.extensions.ordinalIndexOf
 import com._7aske.strapparser.extensions.toKebabCase
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class StringExtensionsKtTest {

@@ -4,6 +4,7 @@ import com._7aske.strapparser.cli.Args
 import com._7aske.strapparser.generator.Generator
 import com._7aske.strapparser.generator.GeneratorContext
 import com._7aske.strapparser.parser.StrapFileResolver
+import com._7aske.strapparser.util.writeString
 import java.nio.file.Paths
 
 class SpringJavaGeneratorImpl : Generator {
@@ -15,9 +16,25 @@ class SpringJavaGeneratorImpl : Generator {
 
         val ctx = GeneratorContext(entities, args)
 
+        if (ctx.args.auditable) {
+            val auditableGenerator =
+                SpringJavaAuditableGeneratorImpl(ctx, dataTypeResolver)
+
+            writeString(
+                auditableGenerator.getOutputFilePath(),
+                auditableGenerator.generate()
+            )
+        }
+
+        if (ctx.args.security) {
+            SpringJavaSecurityGeneratorImpl(ctx, dataTypeResolver).generate()
+        }
+
         entities.values.forEach {
+
             // Entity
-            val entityGenerator = SpringJavaEntityGeneratorImpl(it, ctx, dataTypeResolver)
+            val entityGenerator =
+                SpringJavaEntityGeneratorImpl(it, ctx, dataTypeResolver)
             val entityOutPath = entityGenerator.getOutputFilePath()
 
             writeString(entityOutPath, entityGenerator.generate())

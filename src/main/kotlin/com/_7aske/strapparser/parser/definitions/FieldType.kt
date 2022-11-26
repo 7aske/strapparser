@@ -7,7 +7,8 @@ open class FieldType(
     val value: String
 ) : Definition(token)
 
-class IncompleteRefFieldType(token: Token, value: String) : FieldType(token, value)
+class IncompleteRefFieldType(token: Token, value: String) :
+    FieldType(token, value)
 
 class RefFieldType(token: Token, value: String) : FieldType(token, value)
 

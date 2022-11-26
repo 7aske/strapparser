@@ -7,7 +7,12 @@ const val TAB_OFFSET = 3
 
 class ParserUtil private constructor() {
     companion object {
-        fun printLocation(text: String, row: Int, startChar: Int, endChar: Int) {
+        fun printLocation(
+            text: String,
+            row: Int,
+            startChar: Int,
+            endChar: Int
+        ) {
             // + 1 to skip that starting newline
             val startIndex = text.ordinalIndexOf("\n", row) + 1
             // to find the end of the line

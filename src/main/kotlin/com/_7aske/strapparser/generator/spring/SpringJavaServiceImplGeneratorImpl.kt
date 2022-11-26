@@ -88,7 +88,8 @@ class SpringJavaServiceImplGeneratorImpl(
 
     private fun generateReadMethods(): String =
         buildString {
-            append("public ").append("$SPRING_DOMAIN_PACKAGE.Page<${entity.getFQCN()}>").append(" ")
+            append("public ").append("$SPRING_DOMAIN_PACKAGE.Page<${entity.getFQCN()}>")
+                .append(" ")
             append("findAll($SPRING_DOMAIN_PACKAGE.Pageable page) {")
             append("return ${repository.getVariableName()}.findAll(page);")
             append("}")
