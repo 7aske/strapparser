@@ -21,34 +21,34 @@ class SpringJavaServiceGeneratorImpl(
             "src",
             "main",
             "java",
-            resolvePackage().replace(".", separator),
-            this.resolveClassName() + ".java"
+            getPackage().replace(".", separator),
+            this.getClassName() + ".java"
         )
 
     override fun generate(): String =
         formatter.formatSource(
             buildString {
-                append("package ${resolvePackage()};")
-                append("public interface ${resolveClassName()} {")
-                append("$SPRING_DOMAIN_PACKAGE.Page<${entity.resolveFQCN()}> ")
+                append("package ${getPackage()};")
+                append("public interface ${getClassName()} {")
+                append("$SPRING_DOMAIN_PACKAGE.Page<${entity.getFQCN()}> ")
                 append("findAll($SPRING_DOMAIN_PACKAGE.Pageable page);")
-                append("${entity.resolveFQCN()} findById(${entity.resolveIdFieldsParameters()});")
-                append("${entity.resolveFQCN()} save(${entity.resolveFQCN()} ${entity.resolveVariableName()});")
-                append("${entity.resolveFQCN()} update(${entity.resolveFQCN()} ${entity.resolveVariableName()});")
-                append("void deleteById(${entity.resolveIdFieldsParameters()});")
+                append("${entity.getFQCN()} findById(${entity.getIdFieldsAsArguments()});")
+                append("${entity.getFQCN()} save(${entity.getFQCN()} ${entity.getVariableName()});")
+                append("${entity.getFQCN()} update(${entity.getFQCN()} ${entity.getVariableName()});")
+                append("void deleteById(${entity.getIdFieldsAsArguments()});")
                 append("}")
             }
         )
 
-    override fun resolveVariableName(): String =
-        resolveClassName().uncapitalize()
+    override fun getVariableName(): String =
+        getClassName().uncapitalize()
 
-    override fun resolveClassName(): String =
-        entity.resolveClassName() + "Service"
+    override fun getClassName(): String =
+        entity.getClassName() + "Service"
 
-    override fun resolvePackage(): String =
+    override fun getPackage(): String =
         ctx.getPackageName("service")
 
-    override fun resolveFQCN(): String =
-        resolvePackage() + "." + resolveClassName()
+    override fun getFQCN(): String =
+        getPackage() + "." + getClassName()
 }

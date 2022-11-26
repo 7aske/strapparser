@@ -13,11 +13,11 @@ abstract class BaseGenerator(
 
     abstract fun generate(): String
 
-    abstract fun resolveVariableName(): String
+    abstract fun getVariableName(): String
 
-    abstract fun resolveClassName(): String
+    abstract fun getClassName(): String
 
-    abstract fun resolvePackage(): String
+    abstract fun getPackage(): String
 
-    abstract fun resolveFQCN(): String
+    abstract fun getFQCN(): String
 }

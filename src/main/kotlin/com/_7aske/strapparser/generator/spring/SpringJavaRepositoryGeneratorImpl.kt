@@ -19,15 +19,15 @@ class SpringJavaRepositoryGeneratorImpl(
     override fun generate(): String {
         return formatter.formatSource(
             buildString {
-                append("package ${resolvePackage()};")
+                append("package ${getPackage()};")
 
-                append("public interface ").append(resolveClassName())
+                append("public interface ").append(getClassName())
                 append(" extends ")
                 append(
                     "org.springframework.data.jpa.repository.JpaRepository<${
-                    dataTypeResolver.resolveDataType(entity.resolveFQCN())
+                    dataTypeResolver.resolveDataType(entity.getFQCN())
                     }, ${
-                    dataTypeResolver.resolveDataType(entity.getIdFields()[0])
+                    entity.getIdFQCN()
                     }>"
                 )
 
@@ -36,7 +36,7 @@ class SpringJavaRepositoryGeneratorImpl(
                     append(
                         "org.springframework.data.jpa.repository.JpaSpecificationExecutor<${
                         dataTypeResolver.resolveDataType(
-                            entity.resolveClassName()
+                            entity.getClassName()
                         )
                         }>"
                     )
@@ -46,24 +46,24 @@ class SpringJavaRepositoryGeneratorImpl(
         )
     }
 
-    override fun resolveVariableName(): String =
-        resolveClassName().uncapitalize()
+    override fun getVariableName(): String =
+        getClassName().uncapitalize()
 
-    override fun resolveClassName(): String =
-        entity.resolveClassName() + "Repository"
+    override fun getClassName(): String =
+        entity.getClassName() + "Repository"
 
-    override fun resolvePackage(): String =
+    override fun getPackage(): String =
         ctx.getPackageName("repository")
 
-    override fun resolveFQCN(): String =
-        resolvePackage() + "." + resolveClassName()
+    override fun getFQCN(): String =
+        getPackage() + "." + getClassName()
 
     override fun getOutputFilePath(): Path = Paths.get(
         ctx.getOutputLocation(),
         "src",
         "main",
         "java",
-        resolvePackage().replace(".", separator),
-        this.resolveClassName() + ".java"
+        getPackage().replace(".", separator),
+        this.getClassName() + ".java"
     )
 }

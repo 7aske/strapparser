@@ -28,8 +28,8 @@ class SpringJavaControllerGeneratorImpl(
 
     init {
         entity = service.entity
-        serviceVarName = service.resolveVariableName()
-        serviceFQCN = service.resolveFQCN()
+        serviceVarName = service.getVariableName()
+        serviceFQCN = service.getFQCN()
     }
 
     override fun getOutputFilePath(): Path = Paths.get(
@@ -37,14 +37,14 @@ class SpringJavaControllerGeneratorImpl(
         "src",
         "main",
         "java",
-        resolvePackage().replace(".", separator),
-        this.resolveClassName() + ".java"
+        getPackage().replace(".", separator),
+        this.getClassName() + ".java"
     )
 
     override fun generate(): String {
         return formatter.formatSource(
             buildString {
-                append("package ${resolvePackage()};")
+                append("package ${getPackage()};")
                 append(REST_CONTROLLER_ANNOTATION)
                 append(Mapping.request(resolveEndpoint()))
 
@@ -52,12 +52,12 @@ class SpringJavaControllerGeneratorImpl(
                     append(Lombok.RequiredArgsConstructor)
                 }
 
-                append("public class ").append(resolveClassName())
+                append("public class ").append(getClassName())
                 append("{")
                 append("private final ").append(serviceFQCN).append(" ")
                 append(serviceVarName).append(";")
                 if (!ctx.args.lombok) {
-                    append("public ").append(resolveClassName()).append("(")
+                    append("public ").append(getClassName()).append("(")
                     append(serviceFQCN).append(" ")
                     append(serviceVarName)
                     append(") {")
@@ -73,29 +73,29 @@ class SpringJavaControllerGeneratorImpl(
         )
     }
 
-    override fun resolveVariableName(): String =
-        resolveClassName().uncapitalize()
+    override fun getVariableName(): String =
+        getClassName().uncapitalize()
 
     override fun resolveEndpoint(): String =
-        "/api/v1/" + entity.resolveClassName()
+        "/api/v1/" + entity.getClassName()
             .toKebabCase()
             .uncapitalize()
             .plural()
 
-    override fun resolveClassName(): String =
-        entity.resolveClassName() + "Controller"
+    override fun getClassName(): String =
+        entity.getClassName() + "Controller"
 
-    override fun resolvePackage(): String = ctx.getPackageName("controller")
+    override fun getPackage(): String = ctx.getPackageName("controller")
 
-    override fun resolveFQCN(): String =
-        resolvePackage() + "." + resolveClassName()
+    override fun getFQCN(): String =
+        getPackage() + "." + getClassName()
 
     private fun generateGetEndpoints(): String = buildString {
         append(Mapping.get())
-        append("public ").append("$RESPONSE_ENTITY_FQCN<$SPRING_DOMAIN_PACKAGE.Page<${entity.resolveFQCN()}>>")
+        append("public ").append("$RESPONSE_ENTITY_FQCN<$SPRING_DOMAIN_PACKAGE.Page<${entity.getFQCN()}>>")
         append(
             "getAll${
-            entity.resolveVariableName().plural().capitalize()
+            entity.getVariableName().plural().capitalize()
             }("
         )
         append(SPRING_DOMAIN_PACKAGE).append(".Pageable page")
@@ -103,18 +103,18 @@ class SpringJavaControllerGeneratorImpl(
         append("return $RESPONSE_ENTITY_FQCN.ok($serviceVarName.findAll(page));")
         append("}")
 
-        append(Mapping.get(entity.resolveIdFieldPathVariables()))
-        append("public ").append("$RESPONSE_ENTITY_FQCN<${entity.resolveFQCN()}>")
+        append(Mapping.get(entity.getIdFieldPathVariables()))
+        append("public ").append("$RESPONSE_ENTITY_FQCN<${entity.getFQCN()}>")
         append(
             "get${
-            entity.resolveVariableName().capitalize()
+            entity.getVariableName().capitalize()
             }ById("
         )
         append(resolveIdFieldsParameters())
         append(") {")
         append(
             "return $RESPONSE_ENTITY_FQCN.ok($serviceVarName.findById(${
-            entity.resolveIdFieldVariables()
+            entity.getIdFieldVariables()
             }));"
         )
         append("}")
@@ -122,14 +122,14 @@ class SpringJavaControllerGeneratorImpl(
 
     private fun generatePostEndpoints(): String = buildString {
         append(Mapping.post())
-        append("public ").append("$RESPONSE_ENTITY_FQCN<${entity.resolveFQCN()}>")
+        append("public ").append("$RESPONSE_ENTITY_FQCN<${entity.getFQCN()}>")
         append(
             "save${
-            entity.resolveVariableName().capitalize()
+            entity.getVariableName().capitalize()
             }("
         )
-        append("@$SPRING_BIND_PACKAGE.RequestBody ").append(entity.resolveFQCN())
-            .append(" ").append(entity.resolveVariableName())
+        append("@$SPRING_BIND_PACKAGE.RequestBody ").append(entity.getFQCN())
+            .append(" ").append(entity.getVariableName())
         append(") {")
         append("return ")
         append(RESPONSE_ENTITY_FQCN)
@@ -138,43 +138,43 @@ class SpringJavaControllerGeneratorImpl(
         )
         append(serviceVarName)
         append(".save(")
-        append(entity.resolveVariableName())
+        append(entity.getVariableName())
         append("));")
         append("}")
     }
 
     private fun generatePutEndpoints(): String = buildString {
         append(Mapping.put())
-        append("public ").append("$RESPONSE_ENTITY_FQCN<${entity.resolveFQCN()}>")
+        append("public ").append("$RESPONSE_ENTITY_FQCN<${entity.getFQCN()}>")
         append(
             "update${
-            entity.resolveVariableName().capitalize()
+            entity.getVariableName().capitalize()
             }("
         )
-        append("@$SPRING_BIND_PACKAGE.RequestBody ").append(entity.resolveFQCN())
-            .append(" ").append(entity.resolveVariableName())
+        append("@$SPRING_BIND_PACKAGE.RequestBody ").append(entity.getFQCN())
+            .append(" ").append(entity.getVariableName())
         append(") {")
         append(
             "return $RESPONSE_ENTITY_FQCN.ok($serviceVarName.update(${
-            entity.resolveVariableName()
+            entity.getVariableName()
             }));"
         )
         append("}")
     }
 
     private fun generateDeleteEndpoints(): String = buildString {
-        append(Mapping.delete(entity.resolveIdFieldPathVariables()))
+        append(Mapping.delete(entity.getIdFieldPathVariables()))
         append("public ").append("$RESPONSE_ENTITY_FQCN<Void>")
         append(
             "delete${
-            entity.resolveVariableName().capitalize()
+            entity.getVariableName().capitalize()
             }ById("
         )
         append(resolveIdFieldsParameters())
         append(") {")
         append(
             "$serviceVarName.deleteById(${
-            entity.resolveIdFieldVariables()
+            entity.getIdFieldVariables()
             });"
         )
         append("return $RESPONSE_ENTITY_FQCN.noContent().build();")

@@ -24,28 +24,28 @@ class SpringJavaServiceImplGeneratorImpl(
             "src",
             "main",
             "java",
-            resolvePackage().replace(".", separator),
-            this.resolveClassName() + ".java"
+            getPackage().replace(".", separator),
+            this.getClassName() + ".java"
         )
 
     override fun generate(): String =
         formatter.formatSource(
             buildString {
-                append("package ${resolvePackage()};")
+                append("package ${getPackage()};")
                 append("@org.springframework.stereotype.Service\n")
                 if (ctx.args.lombok) {
                     append(Lombok.RequiredArgsConstructor)
                 }
-                append("public class ${resolveClassName()} implements ")
-                append(service.resolveFQCN()).append(" {")
-                append("private final ${repository.resolveFQCN()} ${repository.resolveVariableName()};")
+                append("public class ${getClassName()} implements ")
+                append(service.getFQCN()).append(" {")
+                append("private final ${repository.getFQCN()} ${repository.getVariableName()};")
 
                 if (!ctx.args.lombok) {
-                    append("public ").append(resolveClassName()).append("(")
-                    append(repository.resolveFQCN()).append(" ")
-                        .append(repository.resolveVariableName())
+                    append("public ").append(getClassName()).append("(")
+                    append(repository.getFQCN()).append(" ")
+                        .append(repository.getVariableName())
                     append(") {")
-                    append("this.${repository.resolveVariableName()} = ${repository.resolveVariableName()};")
+                    append("this.${repository.getVariableName()} = ${repository.getVariableName()};")
                     append("}")
                 }
 
@@ -65,53 +65,53 @@ class SpringJavaServiceImplGeneratorImpl(
     private fun generateDeleteMethods(): String =
         buildString {
             append("public void ")
-            append("deleteById(${entity.resolveIdFieldsParameters()}) {")
-            append("${repository.resolveVariableName()}.deleteById(${entity.resolveIdFieldVariables()});")
+            append("deleteById(${entity.getIdFieldsAsArguments()}) {")
+            append("${repository.getVariableName()}.deleteById(${entity.getCompositeIdFieldVariables()});")
             append("}")
         }
 
     private fun generateUpdateMethods(): String =
         buildString {
-            append("public ").append(entity.resolveFQCN()).append(" ")
-            append("update(${entity.resolveFQCN()} ${entity.resolveVariableName()}) {")
-            append("return ${repository.resolveVariableName()}.save(${entity.resolveVariableName()});")
+            append("public ").append(entity.getFQCN()).append(" ")
+            append("update(${entity.getFQCN()} ${entity.getVariableName()}) {")
+            append("return ${repository.getVariableName()}.save(${entity.getVariableName()});")
             append("}")
         }
 
     private fun generateCreateMethods(): String =
         buildString {
-            append("public ").append(entity.resolveFQCN()).append(" ")
-            append("save(${entity.resolveFQCN()} ${entity.resolveVariableName()}) {")
-            append("return ${repository.resolveVariableName()}.save(${entity.resolveVariableName()});")
+            append("public ").append(entity.getFQCN()).append(" ")
+            append("save(${entity.getFQCN()} ${entity.getVariableName()}) {")
+            append("return ${repository.getVariableName()}.save(${entity.getVariableName()});")
             append("}")
         }
 
     private fun generateReadMethods(): String =
         buildString {
-            append("public ").append("$SPRING_DOMAIN_PACKAGE.Page<${entity.resolveFQCN()}>").append(" ")
+            append("public ").append("$SPRING_DOMAIN_PACKAGE.Page<${entity.getFQCN()}>").append(" ")
             append("findAll($SPRING_DOMAIN_PACKAGE.Pageable page) {")
-            append("return ${repository.resolveVariableName()}.findAll(page);")
+            append("return ${repository.getVariableName()}.findAll(page);")
             append("}")
 
-            append("public ").append(entity.resolveFQCN()).append(" ")
-            append("findById(${entity.resolveIdFieldsParameters()}) {")
+            append("public ").append(entity.getFQCN()).append(" ")
+            append("findById(${entity.getIdFieldsAsArguments()}) {")
             append(
-                "return ${repository.resolveVariableName()}.findById(${entity.resolveIdFieldVariables()})" +
+                "return ${repository.getVariableName()}.findById(${entity.getCompositeIdFieldVariables()})" +
                     ".orElseThrow(() -> " +
-                    "new java.util.NoSuchElementException(\"${entity.resolveClassName()} not found\"));"
+                    "new java.util.NoSuchElementException(\"${entity.getClassName()} not found\"));"
             )
             append("}")
         }
 
-    override fun resolveVariableName(): String =
-        resolveClassName().uncapitalize()
+    override fun getVariableName(): String =
+        getClassName().uncapitalize()
 
-    override fun resolveClassName(): String =
-        entity.resolveClassName() + "ServiceImpl"
+    override fun getClassName(): String =
+        entity.getClassName() + "ServiceImpl"
 
-    override fun resolvePackage(): String =
+    override fun getPackage(): String =
         ctx.getPackageName("service", "impl")
 
-    override fun resolveFQCN(): String =
-        resolvePackage() + "." + resolveClassName()
+    override fun getFQCN(): String =
+        getPackage() + "." + getClassName()
 }

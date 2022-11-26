@@ -1,6 +1,7 @@
 package com._7aske.strapparser.parser.definitions
 
 import com._7aske.strapparser.parser.Token
+import com._7aske.strapparser.parser.TokenType
 
 class Field(
     token: Token,
@@ -8,6 +9,8 @@ class Field(
     var type: FieldType,
     val attributes: List<Attribute>
 ) : Definition(token) {
+
+    fun isId() = attributes.any { it.token.type == TokenType.ID }
 
     fun isRef() = type is RefFieldType
 

@@ -29,13 +29,13 @@ class SpringJavaEntityGeneratorImpl(
             "java",
             ctx.getPackageName().replace(".", separator),
             "entity",
-            this.resolveClassName() + ".java"
+            this.getClassName() + ".java"
         )
 
     override fun generate(): String {
         return formatter.formatSourceAndFixImports(
             buildString {
-                append("package ${resolvePackage()};")
+                append("package ${getPackage()};")
                 append("@jakarta.persistence.Table\n")
                 append("@jakarta.persistence.Entity\n")
                 if (ctx.args.lombok) {
@@ -44,11 +44,26 @@ class SpringJavaEntityGeneratorImpl(
                     append(Lombok.EqualsAndHashCode)
                 }
                 append("public class ")
-                    .append(resolveClassName())
+                    .append(getClassName())
                 append("{")
 
+                // This can be refactored to not check composite id twice
+                if (hasCompositeId()) {
+                    append("@jakarta.persistence.EmbeddedId\n")
+                    append("private ")
+                    append(getIdClassName())
+                    append(" id;")
+                }
+
+                val toGenerate: List<Field> = if (hasCompositeId()) {
+                    entity.fields.filter { !it.isId() }
+                } else {
+                    entity.fields
+                }
+
+
                 append(
-                    entity.fields.joinToString("\n") {
+                    toGenerate.joinToString("\n") {
                         generateField(it)
                     }
                 )
@@ -62,24 +77,57 @@ class SpringJavaEntityGeneratorImpl(
 
                 if (!ctx.args.lombok) {
                     append(
-                        entity.fields.joinToString("\n") {
+                        toGenerate.joinToString("\n") {
                             generateGetter(it) +
-                                generateSetter(it)
+                                    generateSetter(it)
                         }
                     )
 
                     append(
                         referenced.joinToString("\n") {
                             generateGetter(it) +
-                                generateSetter(it)
+                                    generateSetter(it)
                         }
                     )
                 }
 
                 if (hasCompositeId()) {
+                    if (ctx.args.lombok) {
+                        append(Lombok.Data)
+                        append(Lombok.AllArgsConstructor)
+                        append(Lombok.NoArgsConstructor)
+                        append(Lombok.EqualsAndHashCode)
+                    }
+                    append("@jakarta.persistence.Embeddable\n")
                     append(
-                        "public static final class ${resolveClassName()}Id {"
+                        "public static final class ${getIdClassName()} implements java.io.Serializable {"
                     )
+
+                    val idFields = getIdFields()
+                    idFields.forEach {
+                        append(generateField(it))
+                    }
+
+                    if (!ctx.args.lombok) {
+                        append("public ").append(getIdClassName())
+                            .append("(){}")
+                        append("public ").append(getIdClassName()).append("(")
+                        append(idFields.joinToString(", ") {
+                            "${dataTypeResolver.resolveDataType(it)} ${it.name}"
+                        })
+                        append(") {")
+
+                        append(idFields.joinToString("\n") {
+                            "this.${it.name} = ${it.name};"
+                        })
+
+                        append("}")
+
+                        append(idFields.joinToString("\n") {
+                            generateGetter(it) +
+                                    generateSetter(it)
+                        })
+                    }
 
                     append("}")
                 }
@@ -92,7 +140,7 @@ class SpringJavaEntityGeneratorImpl(
 
     override fun getIdFields(): List<Field> =
         entity.fields
-            .filter { it.attributes.any { attr -> attr.token.type == TokenType.ID } }
+            .filter { it.isId() }
             .toList()
 
     override fun generateField(field: Field): String {
@@ -100,7 +148,7 @@ class SpringJavaEntityGeneratorImpl(
             // @Todo handle many to many
             var type = field.type.value
 
-            if (field.attributes.any { it.token.type == TokenType.ID }) {
+            if (field.isId()) {
                 if (ctx.args.lombok) {
                     append(Lombok.EqualsAndHashCodeInclude)
                 }
@@ -117,31 +165,35 @@ class SpringJavaEntityGeneratorImpl(
                 }
                 append("@jakarta.persistence.ManyToOne\n")
                 append("@jakarta.persistence.JoinColumn\n")
-                append("private $type ${resolveVariableName(field)};\n")
+                append("private $type ${getVariableName(field)};\n")
             } else if (field.isList()) {
                 if (ctx.args.lombok) {
                     append(Lombok.ToStringExclude)
                 }
-                append("@jakarta.persistence.OneToMany\n")
+                append("@jakarta.persistence.OneToMany(mappedBy = \"${entity.name.uncapitalize()}\")\n")
                 append(
                     "private java.util.List<$type> ${
-                    resolveVariableName(
-                        field
-                    )
+                        getVariableName(
+                            field
+                        )
                     };\n"
                 )
             } else {
                 append("@jakarta.persistence.Column\n")
                 type = dataTypeResolver.resolveDataType(type)
-                append("private $type ${resolveVariableName(field)};\n")
+                append("private $type ${getVariableName(field)};\n")
             }
         }
     }
 
     override fun generateSetter(field: Field): String {
-        val varName = resolveVariableName(field)
+        val varName = getVariableName(field)
         return buildString {
-            append("public void set${resolveVariableName(field).capitalize()}")
+            append(
+                "public void set${
+                    getVariableName(field).capitalize()
+                }"
+            )
             append("(${dataTypeResolver.resolveDataType(field)} $varName){")
             append("this.$varName = $varName;")
             append("}")
@@ -152,28 +204,28 @@ class SpringJavaEntityGeneratorImpl(
         return buildString {
             append(
                 "public ${dataTypeResolver.resolveDataType(field)} get${
-                resolveVariableName(field).capitalize()
+                    getVariableName(field).capitalize()
                 }"
             )
             append("(){")
-            append("return this.${resolveVariableName(field)};")
+            append("return this.${getVariableName(field)};")
             append("}")
         }
     }
 
-    override fun resolveClassName(): String =
+    override fun getClassName(): String =
         entity.name.capitalize()
 
-    override fun resolvePackage(): String =
+    override fun getPackage(): String =
         ctx.getPackageName("entity")
 
-    override fun resolveFQCN(): String =
-        resolvePackage() + "." + resolveClassName()
+    override fun getFQCN(): String =
+        getPackage() + "." + getClassName()
 
-    override fun resolveVariableName(): String =
+    override fun getVariableName(): String =
         entity.name.uncapitalize()
 
-    override fun resolveVariableName(field: Field): String {
+    override fun getVariableName(field: Field): String {
         return if (field.isList()) {
             field.name.plural()
         } else {
@@ -181,17 +233,41 @@ class SpringJavaEntityGeneratorImpl(
         }
     }
 
-    override fun resolveIdFieldPathVariables() =
+    override fun getIdFQCN(): String {
+        return if (hasCompositeId()) {
+            getPackage() + "." + getClassName() + "." + getIdClassName()
+        } else {
+            val field = getIdFields()[0]
+            dataTypeResolver.resolveDataType(field)
+        }
+    }
+
+    override fun getIdClassName(): String {
+        return if (hasCompositeId()) {
+            getClassName() + "Id"
+        } else {
+            val field = getIdFields()[0]
+            dataTypeResolver.resolveDataType(field)
+        }
+    }
+
+    override fun getIdFieldPathVariables() =
         getIdFields().joinToString("/") {
             "{${it.name}}"
         }
 
-    override fun resolveIdFieldVariables() =
+    override fun getCompositeIdFieldVariables() = if (hasCompositeId()) {
+            "new ${getIdFQCN()}(${getIdFieldVariables()})"
+        } else {
+            getIdFieldVariables()
+        }
+
+    override fun getIdFieldVariables() =
         getIdFields().joinToString(", ") {
             it.name
         }
 
-    override fun resolveIdFieldsParameters() =
+    override fun getIdFieldsAsArguments() =
         getIdFields().joinToString(", ") {
             buildString {
                 append(
@@ -203,5 +279,5 @@ class SpringJavaEntityGeneratorImpl(
         }
 
     override fun hasCompositeId() =
-        getIdFields().isNotEmpty()
+        getIdFields().size > 1
 }

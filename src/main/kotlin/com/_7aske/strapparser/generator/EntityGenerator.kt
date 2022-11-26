@@ -13,17 +13,22 @@ abstract class EntityGenerator(
 
     abstract fun generateGetter(field: Field): String
 
-    abstract fun resolveVariableName(field: Field): String
+    abstract fun getVariableName(field: Field): String
 
     abstract fun generateField(field: Field): String
 
     abstract fun getIdFields(): List<Field>
 
-    abstract fun resolveIdFieldPathVariables(): String
+    abstract fun getIdFieldPathVariables(): String
 
-    abstract fun resolveIdFieldVariables(): String
+    abstract fun getIdFieldVariables(): String
 
-    abstract fun resolveIdFieldsParameters(): String
+    abstract fun getIdFieldsAsArguments(): String
 
     abstract fun hasCompositeId(): Boolean
+
+    abstract fun getIdClassName(): String
+
+    abstract fun getIdFQCN(): String
+    abstract fun getCompositeIdFieldVariables(): String
 }

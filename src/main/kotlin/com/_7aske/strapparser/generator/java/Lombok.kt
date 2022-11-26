@@ -3,6 +3,8 @@ package com._7aske.strapparser.generator.java
 class Lombok(private val annotation: String, private vararg val params: String) {
     companion object {
         val RequiredArgsConstructor = Lombok("RequiredArgsConstructor")
+        val NoArgsConstructor = Lombok("NoArgsConstructor")
+        val AllArgsConstructor = Lombok("AllArgsConstructor")
         val ToString = Lombok("ToString")
         val ToStringExclude = Lombok("ToString.Exclude")
         val Data = Lombok("Data")
