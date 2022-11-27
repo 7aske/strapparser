@@ -5,12 +5,13 @@ import com._7aske.strapparser.extensions.plural
 import com._7aske.strapparser.extensions.toKebabCase
 import com._7aske.strapparser.extensions.uncapitalize
 import com._7aske.strapparser.generator.*
+import com._7aske.strapparser.generator.java.JavaMethodBuilder
 import com._7aske.strapparser.generator.java.Lombok
 import com.google.googlejavaformat.java.Formatter
 import java.nio.file.Path
 import java.nio.file.Paths
 
-const val RESPONSE_ENTITY_FQCN = "org.springframework.http.ResponseEntity"
+const val RESPONSE_ENTITY = "org.springframework.http.ResponseEntity"
 const val SPRING_BIND_PACKAGE = "org.springframework.web.bind.annotation"
 const val SPRING_DOMAIN_PACKAGE = "org.springframework.data.domain"
 const val REST_CONTROLLER_ANNOTATION = "@$SPRING_BIND_PACKAGE.RestController\n"
@@ -91,94 +92,80 @@ class SpringJavaControllerGeneratorImpl(
         getPackage() + "." + getClassName()
 
     private fun generateGetEndpoints(): String = buildString {
-        append(Mapping.get())
-        append("public ").append("$RESPONSE_ENTITY_FQCN<$SPRING_DOMAIN_PACKAGE.Page<${entity.getFQCN()}>>")
-        append(
-            "getAll${
-            entity.getVariableName().plural().capitalize()
-            }("
-        )
-        append(SPRING_DOMAIN_PACKAGE).append(".Pageable page")
-        append(") {")
-        append("return $RESPONSE_ENTITY_FQCN.ok($serviceVarName.findAll(page));")
-        append("}")
+        val entitySingular = entity.getVariableName().capitalize()
+        val entityPlural = entitySingular.plural()
 
-        append(Mapping.get(entity.getIdFieldPathVariables()))
-        append("public ").append("$RESPONSE_ENTITY_FQCN<${entity.getFQCN()}>")
-        append(
-            "get${
-            entity.getVariableName().capitalize()
-            }ById("
-        )
-        append(resolveIdFieldsParameters())
-        append(") {")
-        append(
-            "return $RESPONSE_ENTITY_FQCN.ok($serviceVarName.findById(${
-            entity.getIdFieldVariables()
-            }));"
-        )
-        append("}")
+        append(JavaMethodBuilder.of("getAll${entityPlural}").apply {
+            annotations.add(Mapping.get().toString())
+            returnType =
+                "$RESPONSE_ENTITY<$SPRING_DOMAIN_PACKAGE.Page<${entity.getFQCN()}>>"
+            parameters.add(listOf("$SPRING_DOMAIN_PACKAGE.Pageable", "page"))
+            implementation =
+                "return $RESPONSE_ENTITY.ok($serviceVarName.findAll(page));"
+        })
+
+        append(JavaMethodBuilder.of("get${entitySingular}ById").apply {
+            annotations.add(
+                Mapping.get(entity.getIdFieldPathVariables()).toString()
+            )
+            returnType = "$RESPONSE_ENTITY<${entity.getFQCN()}>"
+            parameters.addAll(resolveIdFieldsParameters())
+            implementation =
+                "return $RESPONSE_ENTITY.ok($serviceVarName.findById(${
+                    entity.getIdFieldVariables()
+                }));"
+        })
     }
 
     private fun generatePostEndpoints(): String = buildString {
-        append(Mapping.post())
-        append("public ").append("$RESPONSE_ENTITY_FQCN<${entity.getFQCN()}>")
-        append(
-            "save${
-            entity.getVariableName().capitalize()
-            }("
-        )
-        append("@$SPRING_BIND_PACKAGE.RequestBody ").append(entity.getFQCN())
-            .append(" ").append(entity.getVariableName())
-        append(") {")
-        append("return ")
-        append(RESPONSE_ENTITY_FQCN)
-        append(
-            ".status(org.springframework.http.HttpStatus.CREATED).body("
-        )
-        append(serviceVarName)
-        append(".save(")
-        append(entity.getVariableName())
-        append("));")
-        append("}")
+        val entitySingular = entity.getVariableName().capitalize()
+
+        append(JavaMethodBuilder.of("save${entitySingular}").apply {
+            annotations.add(Mapping.post().toString())
+            returnType = "$RESPONSE_ENTITY<${entity.getFQCN()}>"
+            parameters.add(
+                listOf(
+                    "@$SPRING_BIND_PACKAGE.RequestBody",
+                    entity.getFQCN(),
+                    entity.getVariableName()
+                )
+            )
+            implementation =
+                "return $RESPONSE_ENTITY.status(org.springframework.http.HttpStatus.CREATED).body($serviceVarName.save(${entity.getVariableName()}));"
+        })
     }
 
     private fun generatePutEndpoints(): String = buildString {
-        append(Mapping.put())
-        append("public ").append("$RESPONSE_ENTITY_FQCN<${entity.getFQCN()}>")
-        append(
-            "update${
-            entity.getVariableName().capitalize()
-            }("
-        )
-        append("@$SPRING_BIND_PACKAGE.RequestBody ").append(entity.getFQCN())
-            .append(" ").append(entity.getVariableName())
-        append(") {")
-        append(
-            "return $RESPONSE_ENTITY_FQCN.ok($serviceVarName.update(${
-            entity.getVariableName()
-            }));"
-        )
-        append("}")
+        val entitySingular = entity.getVariableName().capitalize()
+
+        append(JavaMethodBuilder.of("update${entitySingular}").apply {
+            annotations.add(Mapping.put().toString())
+            returnType = "$RESPONSE_ENTITY<${entity.getFQCN()}>"
+            parameters.add(
+                listOf(
+                    "@$SPRING_BIND_PACKAGE.RequestBody",
+                    entity.getFQCN(),
+                    entity.getVariableName()
+                )
+            )
+            implementation =
+                "return $RESPONSE_ENTITY.ok($serviceVarName.update(${entity.getVariableName()}));"
+        })
     }
 
     private fun generateDeleteEndpoints(): String = buildString {
-        append(Mapping.delete(entity.getIdFieldPathVariables()))
-        append("public ").append("$RESPONSE_ENTITY_FQCN<Void>")
-        append(
-            "delete${
-            entity.getVariableName().capitalize()
-            }ById("
-        )
-        append(resolveIdFieldsParameters())
-        append(") {")
-        append(
-            "$serviceVarName.deleteById(${
-            entity.getIdFieldVariables()
-            });"
-        )
-        append("return $RESPONSE_ENTITY_FQCN.noContent().build();")
-        append("}")
+        val entitySingular = entity.getVariableName().capitalize()
+
+        append(JavaMethodBuilder.of("delete${entitySingular}ById").apply {
+            annotations.add(
+                Mapping.delete(entity.getIdFieldPathVariables()).toString()
+            )
+            returnType = "$RESPONSE_ENTITY<Void>"
+            parameters.addAll(resolveIdFieldsParameters())
+            implementation =
+                "$serviceVarName.deleteById(${entity.getIdFieldVariables()});" +
+                        "return $RESPONSE_ENTITY.noContent().build();"
+        })
     }
 
     override fun generateEndpoints(): String = buildString {
@@ -188,17 +175,12 @@ class SpringJavaControllerGeneratorImpl(
         append(generateDeleteEndpoints())
     }
 
-    private fun resolveIdFieldsParameters(): String =
-        entity.getIdFields().joinToString(", ") {
-            buildString {
-                append("@$SPRING_BIND_PACKAGE.PathVariable")
-                append(" ")
-                append(
-                    dataTypeResolver.resolveDataType(it)
-                )
-                append(" ")
-                append(it.name)
-            }
+    private fun resolveIdFieldsParameters(): List<List<String>> =
+        entity.getIdFields().map {
+            listOf(
+                "@$SPRING_BIND_PACKAGE.PathVariable",
+                dataTypeResolver.resolveDataType(it), it.name
+            )
         }
 }
 

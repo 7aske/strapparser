@@ -4,6 +4,7 @@ import com._7aske.strapparser.extensions.uncapitalize
 import com._7aske.strapparser.generator.BaseGenerator
 import com._7aske.strapparser.generator.DataTypeResolver
 import com._7aske.strapparser.generator.GeneratorContext
+import com._7aske.strapparser.generator.java.JavaMethodBuilder
 import com._7aske.strapparser.generator.java.Lombok
 import com.google.googlejavaformat.java.Formatter
 import java.nio.file.Path
@@ -60,37 +61,20 @@ class SpringJavaAuditableGeneratorImpl(
             }
         )
 
-    private fun getGettersAndSetters() =
-        "public java.time.Instant getCreatedDate() {" +
-            "return createdDate;" +
-            "}" +
-            "public void setCreatedDate(java.time.Instant createdDate) {" +
-            "this.createdDate = createdDate;" +
-            "}" +
-            "public java.time.Instant getLastModifiedDate() {" +
-            "return lastModifiedDate;" +
-            "}" +
-            "public void setLastModifiedDate(java.time.Instant lastModifiedDate) {" +
-            "this.lastModifiedDate = lastModifiedDate;" +
-            "}" +
-            "public String getLastModifiedBy() {" +
-            "return lastModifiedBy;" +
-            "}" +
-            "public void setLastModifiedBy(String lastModifiedBy) {" +
-            "this.lastModifiedBy = lastModifiedBy;" +
-            "}" +
-            "public String getCreatedBy() {" +
-            "return createdBy;" +
-            "}" +
-            "public void setCreatedBy(String createdBy) {" +
-            "this.createdBy = createdBy;" +
-            "}" +
-            "public Integer getRecordStatus() {" +
-            "return recordStatus;" +
-            "}" +
-            "public void setRecordStatus(Integer recordStatus) {" +
-            "this.recordStatus = recordStatus;" +
-            "}"
+    private fun getGettersAndSetters(): String {
+        return buildString {
+            append(JavaMethodBuilder.setter("createdDate", "java.time.Instant"))
+            append(JavaMethodBuilder.getter("createdDate", "java.time.Instant"))
+            append(JavaMethodBuilder.setter("lastModifiedDate", "java.time.Instant"))
+            append(JavaMethodBuilder.getter("lastModifiedDate", "java.time.Instant"))
+            append(JavaMethodBuilder.setter("createdBy", "String"))
+            append(JavaMethodBuilder.getter("createdBy", "String"))
+            append(JavaMethodBuilder.setter("lastModifiedBy", "String"))
+            append(JavaMethodBuilder.getter("lastModifiedBy", "String"))
+            append(JavaMethodBuilder.setter("recordStatus", "Integer"))
+            append(JavaMethodBuilder.getter("recordStatus", "Integer"))
+        }
+    }
 
     override fun getVariableName(): String = getClassName().uncapitalize()
 

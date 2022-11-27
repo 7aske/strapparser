@@ -3,10 +3,13 @@ package com._7aske.strapparser.generator.spring
 import com._7aske.strapparser.extensions.capitalize
 import com._7aske.strapparser.extensions.uncapitalize
 import com._7aske.strapparser.generator.*
+import com._7aske.strapparser.generator.java.JavaMethodBuilder
 import com._7aske.strapparser.generator.java.Lombok
 import com.google.googlejavaformat.java.Formatter
 import java.nio.file.Path
 import java.nio.file.Paths
+
+const val OVERRIDE = "@Override"
 
 class SpringJavaServiceImplGeneratorImpl(
     private val repository: RepositoryGenerator,
@@ -66,69 +69,92 @@ class SpringJavaServiceImplGeneratorImpl(
             }
         }
 
-    private fun generateUserDetailsLoadByUsername(): String {
-        return buildString {
-            append(
-                """
-              @Override
-              public org.springframework.security.core.userdetails.UserDetails loadUserByUsername(String username) throws org.springframework.security.core.userdetails.UsernameNotFoundException {
-                """.trimIndent()
-            )
+    private fun generateUserDetailsLoadByUsername(): String =
+        JavaMethodBuilder.of("loadUserByUsername").apply {
+            annotations.add(OVERRIDE)
+            returnType =
+                "org.springframework.security.core.userdetails.UserDetails"
+            throws.add("org.springframework.security.core.userdetails.UsernameNotFoundException")
+            parameters.add(listOf("String", "username"))
             val usernameField = entity.entity.getUsernameField()
-            if (usernameField == null) {
-                append("throw new IllegalStateException(\"Not yet implemented\");")
+            implementation = if (usernameField == null) {
+                "throw new IllegalStateException(\"Not yet implemented\");"
             } else {
-                append(
-                    """
+                """
                 return ${repository.getVariableName()}.findBy${entity.entity.getUsernameField()?.name?.capitalize()}(username)
                     .orElseThrow(() -> new org.springframework.security.core.userdetails.UsernameNotFoundException(String.format("User with username %s not found", username)));
-                    """.trimIndent()
-                )
+                """.trimIndent()
             }
-            append("}")
-        }
-    }
+        }.build()
 
     private fun generateDeleteMethods(): String =
-        buildString {
-            append("public void ")
-            append("deleteById(${entity.getIdFieldsAsArguments()}) {")
-            append("${repository.getVariableName()}.deleteById(${entity.getCompositeIdFieldVariables()});")
-            append("}")
-        }
+        JavaMethodBuilder.of("deleteById").apply {
+            annotations.add(OVERRIDE)
+            parameters.addAll(entity.getIdFields().map {
+                listOf(
+                    dataTypeResolver.resolveDataType(it), it.name
+                )
+            })
+            implementation =
+                "${repository.getVariableName()}.deleteById(${entity.getCompositeIdFieldVariables()});"
+        }.build()
 
     private fun generateUpdateMethods(): String =
-        buildString {
-            append("public ").append(entity.getFQCN()).append(" ")
-            append("update(${entity.getFQCN()} ${entity.getVariableName()}) {")
-            append("return ${repository.getVariableName()}.save(${entity.getVariableName()});")
-            append("}")
-        }
+        JavaMethodBuilder.of("update").apply {
+            annotations.add(OVERRIDE)
+            parameters.add(
+                listOf(
+                    entity.getFQCN(), entity.getVariableName()
+                )
+            )
+            returnType = entity.getFQCN()
+            implementation =
+                "return ${repository.getVariableName()}.save(${entity.getVariableName()});"
+        }.build()
 
     private fun generateCreateMethods(): String =
-        buildString {
-            append("public ").append(entity.getFQCN()).append(" ")
-            append("save(${entity.getFQCN()} ${entity.getVariableName()}) {")
-            append("return ${repository.getVariableName()}.save(${entity.getVariableName()});")
-            append("}")
-        }
+        JavaMethodBuilder.of("save").apply {
+            annotations.add(OVERRIDE)
+            parameters.add(
+                listOf(
+                    entity.getFQCN(), entity.getVariableName()
+                )
+            )
+            returnType = entity.getFQCN()
+            implementation =
+                "return ${repository.getVariableName()}.save(${entity.getVariableName()});"
+        }.build()
 
     private fun generateReadMethods(): String =
         buildString {
-            append("public ").append("$SPRING_DOMAIN_PACKAGE.Page<${entity.getFQCN()}>")
-                .append(" ")
-            append("findAll($SPRING_DOMAIN_PACKAGE.Pageable page) {")
-            append("return ${repository.getVariableName()}.findAll(page);")
-            append("}")
-
-            append("public ").append(entity.getFQCN()).append(" ")
-            append("findById(${entity.getIdFieldsAsArguments()}) {")
             append(
-                "return ${repository.getVariableName()}.findById(${entity.getCompositeIdFieldVariables()})" +
-                    ".orElseThrow(() -> " +
-                    "new java.util.NoSuchElementException(\"${entity.getClassName()} not found\"));"
-            )
-            append("}")
+                JavaMethodBuilder.of("findAll").apply {
+                    annotations.add(OVERRIDE)
+                    parameters.add(
+                        listOf(
+                            "$SPRING_DOMAIN_PACKAGE.Pageable",
+                            "page"
+                        )
+                    )
+                    returnType =
+                        "$SPRING_DOMAIN_PACKAGE.Page<${entity.getFQCN()}>"
+                    implementation =
+                        "return ${repository.getVariableName()}.findAll(page);"
+                })
+            append(
+                JavaMethodBuilder.of("findById").apply {
+                    annotations.add(OVERRIDE)
+                    parameters.addAll(entity.getIdFields().map {
+                        listOf(
+                            dataTypeResolver.resolveDataType(it), it.name
+                        )
+                    })
+                    returnType = entity.getFQCN()
+                    implementation =
+                        "return ${repository.getVariableName()}.findById(${entity.getCompositeIdFieldVariables()})" +
+                                ".orElseThrow(() -> " +
+                                "new java.util.NoSuchElementException(\"${entity.getClassName()} not found\"));"
+                })
         }
 
     override fun getVariableName(): String =
