@@ -136,7 +136,8 @@ class SpringJavaControllerGeneratorImpl(
                     )
                 )
                 implementation =
-                    "return $RESPONSE_ENTITY.status(org.springframework.http.HttpStatus.CREATED).body($serviceVarName.save(${entity.getVariableName()}));"
+                    "return $RESPONSE_ENTITY.status(org.springframework.http.HttpStatus.CREATED)" +
+                            ".body($serviceVarName.save(${entity.getVariableName()}));"
             }
         )
     }

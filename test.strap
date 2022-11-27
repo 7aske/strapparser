@@ -1,0 +1,4 @@
+entity User userDetails
+	field `id` int serial id
+	field `username` string username
+	field `password` string password
