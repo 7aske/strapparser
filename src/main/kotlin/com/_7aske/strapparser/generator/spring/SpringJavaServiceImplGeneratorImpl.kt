@@ -90,11 +90,13 @@ class SpringJavaServiceImplGeneratorImpl(
     private fun generateDeleteMethods(): String =
         JavaMethodBuilder.of("deleteById").apply {
             annotations.add(OVERRIDE)
-            parameters.addAll(entity.getIdFields().map {
-                listOf(
-                    dataTypeResolver.resolveDataType(it), it.name
-                )
-            })
+            parameters.addAll(
+                entity.getIdFields().map {
+                    listOf(
+                        dataTypeResolver.resolveDataType(it), it.name
+                    )
+                }
+            )
             implementation =
                 "${repository.getVariableName()}.deleteById(${entity.getCompositeIdFieldVariables()});"
         }.build()
@@ -140,21 +142,25 @@ class SpringJavaServiceImplGeneratorImpl(
                         "$SPRING_DOMAIN_PACKAGE.Page<${entity.getFQCN()}>"
                     implementation =
                         "return ${repository.getVariableName()}.findAll(page);"
-                })
+                }
+            )
             append(
                 JavaMethodBuilder.of("findById").apply {
                     annotations.add(OVERRIDE)
-                    parameters.addAll(entity.getIdFields().map {
-                        listOf(
-                            dataTypeResolver.resolveDataType(it), it.name
-                        )
-                    })
+                    parameters.addAll(
+                        entity.getIdFields().map {
+                            listOf(
+                                dataTypeResolver.resolveDataType(it), it.name
+                            )
+                        }
+                    )
                     returnType = entity.getFQCN()
                     implementation =
                         "return ${repository.getVariableName()}.findById(${entity.getCompositeIdFieldVariables()})" +
-                                ".orElseThrow(() -> " +
-                                "new java.util.NoSuchElementException(\"${entity.getClassName()} not found\"));"
-                })
+                        ".orElseThrow(() -> " +
+                        "new java.util.NoSuchElementException(\"${entity.getClassName()} not found\"));"
+                }
+            )
         }
 
     override fun getVariableName(): String =

@@ -95,77 +95,87 @@ class SpringJavaControllerGeneratorImpl(
         val entitySingular = entity.getVariableName().capitalize()
         val entityPlural = entitySingular.plural()
 
-        append(JavaMethodBuilder.of("getAll${entityPlural}").apply {
-            annotations.add(Mapping.get().toString())
-            returnType =
-                "$RESPONSE_ENTITY<$SPRING_DOMAIN_PACKAGE.Page<${entity.getFQCN()}>>"
-            parameters.add(listOf("$SPRING_DOMAIN_PACKAGE.Pageable", "page"))
-            implementation =
-                "return $RESPONSE_ENTITY.ok($serviceVarName.findAll(page));"
-        })
+        append(
+            JavaMethodBuilder.of("getAll$entityPlural").apply {
+                annotations.add(Mapping.get().toString())
+                returnType =
+                    "$RESPONSE_ENTITY<$SPRING_DOMAIN_PACKAGE.Page<${entity.getFQCN()}>>"
+                parameters.add(listOf("$SPRING_DOMAIN_PACKAGE.Pageable", "page"))
+                implementation =
+                    "return $RESPONSE_ENTITY.ok($serviceVarName.findAll(page));"
+            }
+        )
 
-        append(JavaMethodBuilder.of("get${entitySingular}ById").apply {
-            annotations.add(
-                Mapping.get(entity.getIdFieldPathVariables()).toString()
-            )
-            returnType = "$RESPONSE_ENTITY<${entity.getFQCN()}>"
-            parameters.addAll(resolveIdFieldsParameters())
-            implementation =
-                "return $RESPONSE_ENTITY.ok($serviceVarName.findById(${
+        append(
+            JavaMethodBuilder.of("get${entitySingular}ById").apply {
+                annotations.add(
+                    Mapping.get(entity.getIdFieldPathVariables()).toString()
+                )
+                returnType = "$RESPONSE_ENTITY<${entity.getFQCN()}>"
+                parameters.addAll(resolveIdFieldsParameters())
+                implementation =
+                    "return $RESPONSE_ENTITY.ok($serviceVarName.findById(${
                     entity.getIdFieldVariables()
-                }));"
-        })
+                    }));"
+            }
+        )
     }
 
     private fun generatePostEndpoints(): String = buildString {
         val entitySingular = entity.getVariableName().capitalize()
 
-        append(JavaMethodBuilder.of("save${entitySingular}").apply {
-            annotations.add(Mapping.post().toString())
-            returnType = "$RESPONSE_ENTITY<${entity.getFQCN()}>"
-            parameters.add(
-                listOf(
-                    "@$SPRING_BIND_PACKAGE.RequestBody",
-                    entity.getFQCN(),
-                    entity.getVariableName()
+        append(
+            JavaMethodBuilder.of("save$entitySingular").apply {
+                annotations.add(Mapping.post().toString())
+                returnType = "$RESPONSE_ENTITY<${entity.getFQCN()}>"
+                parameters.add(
+                    listOf(
+                        "@$SPRING_BIND_PACKAGE.RequestBody",
+                        entity.getFQCN(),
+                        entity.getVariableName()
+                    )
                 )
-            )
-            implementation =
-                "return $RESPONSE_ENTITY.status(org.springframework.http.HttpStatus.CREATED).body($serviceVarName.save(${entity.getVariableName()}));"
-        })
+                implementation =
+                    "return $RESPONSE_ENTITY.status(org.springframework.http.HttpStatus.CREATED).body($serviceVarName.save(${entity.getVariableName()}));"
+            }
+        )
     }
 
     private fun generatePutEndpoints(): String = buildString {
         val entitySingular = entity.getVariableName().capitalize()
 
-        append(JavaMethodBuilder.of("update${entitySingular}").apply {
-            annotations.add(Mapping.put().toString())
-            returnType = "$RESPONSE_ENTITY<${entity.getFQCN()}>"
-            parameters.add(
-                listOf(
-                    "@$SPRING_BIND_PACKAGE.RequestBody",
-                    entity.getFQCN(),
-                    entity.getVariableName()
+        append(
+            JavaMethodBuilder.of("update$entitySingular").apply {
+                annotations.add(Mapping.put().toString())
+                returnType = "$RESPONSE_ENTITY<${entity.getFQCN()}>"
+                parameters.add(
+                    listOf(
+                        "@$SPRING_BIND_PACKAGE.RequestBody",
+                        entity.getFQCN(),
+                        entity.getVariableName()
+                    )
                 )
-            )
-            implementation =
-                "return $RESPONSE_ENTITY.ok($serviceVarName.update(${entity.getVariableName()}));"
-        })
+                implementation =
+                    "return $RESPONSE_ENTITY.ok($serviceVarName.update(${entity.getVariableName()}));"
+            }
+        )
     }
 
     private fun generateDeleteEndpoints(): String = buildString {
         val entitySingular = entity.getVariableName().capitalize()
 
-        append(JavaMethodBuilder.of("delete${entitySingular}ById").apply {
-            annotations.add(
-                Mapping.delete(entity.getIdFieldPathVariables()).toString()
-            )
-            returnType = "$RESPONSE_ENTITY<Void>"
-            parameters.addAll(resolveIdFieldsParameters())
-            implementation =
-                "$serviceVarName.deleteById(${entity.getIdFieldVariables()});" +
-                        "return $RESPONSE_ENTITY.noContent().build();"
-        })
+        append(
+            JavaMethodBuilder.of("delete${entitySingular}ById").apply {
+                annotations.add(
+                    Mapping.delete(entity.getIdFieldPathVariables()).toString()
+                )
+                returnType = "$RESPONSE_ENTITY<Void>"
+                parameters.addAll(resolveIdFieldsParameters())
+                implementation =
+                    "$serviceVarName.deleteById(${entity.getIdFieldVariables()});" +
+                    "return $RESPONSE_ENTITY.noContent().build();"
+            }
+        )
     }
 
     override fun generateEndpoints(): String = buildString {

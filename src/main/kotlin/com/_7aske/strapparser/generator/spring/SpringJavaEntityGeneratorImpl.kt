@@ -140,7 +140,7 @@ class SpringJavaEntityGeneratorImpl(
     }
 
     private fun generateUserDetailsGettersAndSetters(): String {
-       return buildString {
+        return buildString {
             append(
                 JavaMethodBuilder.getter(
                     "authorities",
@@ -151,34 +151,46 @@ class SpringJavaEntityGeneratorImpl(
                 }
             )
 
-            append(JavaMethodBuilder.of("getUsername").apply {
-                annotations.add("@Override")
-                returnType = "String"
-                implementation = "return ${entity.getUsernameField()?.name ?: "null"};"
-            })
+            append(
+                JavaMethodBuilder.of("getUsername").apply {
+                    annotations.add("@Override")
+                    returnType = "String"
+                    implementation = "return ${entity.getUsernameField()?.name ?: "null"};"
+                }
+            )
 
-            append(JavaMethodBuilder.of("getPassword").apply {
-                annotations.add("@Override")
-                returnType = "String"
-                implementation = "return ${getPasswordField()};"
-            })
+            append(
+                JavaMethodBuilder.of("getPassword").apply {
+                    annotations.add("@Override")
+                    returnType = "String"
+                    implementation = "return ${getPasswordField()};"
+                }
+            )
 
-            append(JavaMethodBuilder.of("isAccountNonExpired").apply {
-                returnType = "boolean"
-                implementation = "return isEnabled();"
-            })
-            append(JavaMethodBuilder.of("isAccountNonLocked").apply {
-                returnType = "boolean"
-                implementation = "return isEnabled();"
-            })
-            append(JavaMethodBuilder.of("isCredentialsNonExpired").apply {
-                returnType = "boolean"
-                implementation = "return isEnabled();"
-            })
-            append(JavaMethodBuilder.of("isEnabled").apply {
-                returnType = "boolean"
-                implementation = "return true;"
-            })
+            append(
+                JavaMethodBuilder.of("isAccountNonExpired").apply {
+                    returnType = "boolean"
+                    implementation = "return isEnabled();"
+                }
+            )
+            append(
+                JavaMethodBuilder.of("isAccountNonLocked").apply {
+                    returnType = "boolean"
+                    implementation = "return isEnabled();"
+                }
+            )
+            append(
+                JavaMethodBuilder.of("isCredentialsNonExpired").apply {
+                    returnType = "boolean"
+                    implementation = "return isEnabled();"
+                }
+            )
+            append(
+                JavaMethodBuilder.of("isEnabled").apply {
+                    returnType = "boolean"
+                    implementation = "return true;"
+                }
+            )
         }
     }
 
@@ -222,7 +234,7 @@ class SpringJavaEntityGeneratorImpl(
                 append(
                     idFields.joinToString("\n") {
                         generateGetter(it) +
-                                generateSetter(it)
+                            generateSetter(it)
                     }
                 )
             }
@@ -266,9 +278,9 @@ class SpringJavaEntityGeneratorImpl(
                 append("@jakarta.persistence.OneToMany(mappedBy = \"${entity.name.uncapitalize()}\")\n")
                 append(
                     "private java.util.List<$type> ${
-                        getVariableName(
-                            field
-                        )
+                    getVariableName(
+                        field
+                    )
                     };\n"
                 )
             } else {
@@ -284,7 +296,7 @@ class SpringJavaEntityGeneratorImpl(
         return buildString {
             append(
                 "public void set${
-                    getVariableName(field).capitalize()
+                getVariableName(field).capitalize()
                 }"
             )
             append("(${dataTypeResolver.resolveDataType(field)} $varName){")
@@ -297,7 +309,7 @@ class SpringJavaEntityGeneratorImpl(
         return buildString {
             append(
                 "public ${dataTypeResolver.resolveDataType(field)} get${
-                    getVariableName(field).capitalize()
+                getVariableName(field).capitalize()
                 }"
             )
             append("(){")
