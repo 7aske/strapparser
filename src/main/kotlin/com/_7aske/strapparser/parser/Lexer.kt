@@ -1,7 +1,7 @@
 package com._7aske.strapparser.parser
 
 import com._7aske.strapparser.parser.iter.IndexedStringIterator
-import com._7aske.strapparser.util.ParserUtil.Companion.printLocation
+import com._7aske.strapparser.util.printLocation
 
 class Lexer(input: String) : IndexedStringIterator(input) {
     private val tokens = mutableListOf<Token>()
@@ -15,6 +15,11 @@ class Lexer(input: String) : IndexedStringIterator(input) {
     fun lex(): MutableList<Token> {
         while (hasNext()) {
             eatSpace()
+
+            if (isPeek('#')) {
+                eatWhile { !isPeek('\n') }
+                continue
+            }
 
             if (isPeek('\t')) {
                 TokenType.tryParse(next())
@@ -31,6 +36,12 @@ class Lexer(input: String) : IndexedStringIterator(input) {
             if (isPeek('`')) {
                 val word = eatIdentifier()
                 emit(TokenType.IDENTIFIER, word)
+                continue
+            }
+
+            if (isPeek('=')) {
+                next()
+                emit(TokenType.EQUALS)
                 continue
             }
 

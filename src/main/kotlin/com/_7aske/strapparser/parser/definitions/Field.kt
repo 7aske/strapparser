@@ -21,6 +21,11 @@ class Field(
 
     fun isRegular() = !isRef() && !isList()
 
+    fun getColumnName(): String = attributes
+        .firstOrNull { it.token.type == TokenType.COLUMN }
+        ?.value
+        ?: this.name
+
     fun getReferencedEntityName(): String {
         check(isList() || isRef())
         return type.value

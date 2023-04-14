@@ -2,7 +2,7 @@ package com._7aske.strapparser.parser
 
 import com._7aske.strapparser.parser.ast.*
 import com._7aske.strapparser.parser.iter.TokenIterator
-import com._7aske.strapparser.util.ParserUtil.Companion.printLocation
+import com._7aske.strapparser.util.printLocation
 
 class Parser(private val text: String, tokens: List<Token>) :
     TokenIterator(tokens) {
@@ -29,14 +29,22 @@ class Parser(private val text: String, tokens: List<Token>) :
     }
 
     private fun parseEntityNode(): AstEntityNode {
-        val entityToken = getOrThrowExpectedToken(TokenType.ENTITY)
+        val entityToken = match(TokenType.ENTITY)
 
-        val identifierToken = getOrThrowExpectedToken(TokenType.IDENTIFIER)
+        val identifierToken = match(TokenType.IDENTIFIER)
         val identifierNode = AstIdentifierNode(identifierToken)
 
         val attributeNodes = mutableListOf<AstNode>()
         while (isPeekOfEntityAttributeType()) {
-            attributeNodes.add(AstAttributeNode(next()))
+            val next = next()
+            if (next.type == TokenType.TABLE) {
+                getOrThrowUnexpectedToken(TokenType.EQUALS)
+                val tableToken = getOrThrowUnexpectedToken(TokenType.IDENTIFIER)
+
+                attributeNodes.add(AstAttributeNode(next, tableToken))
+            } else {
+                attributeNodes.add(AstAttributeNode(next))
+            }
         }
 
         getOrThrowUnexpectedToken(TokenType.NEWLINE)
@@ -64,9 +72,9 @@ class Parser(private val text: String, tokens: List<Token>) :
         isPeekOfType(*TokenType.fieldAttributeTypes)
 
     private fun parseFieldNode(): AstFieldNode {
-        val fieldToken = getOrThrowExpectedToken(TokenType.FIELD)
+        val fieldToken = match(TokenType.FIELD)
 
-        val identifierToken = getOrThrowExpectedToken(TokenType.IDENTIFIER)
+        val identifierToken = match(TokenType.IDENTIFIER)
 
         val identifierNode = AstIdentifierNode(identifierToken)
 
@@ -79,16 +87,25 @@ class Parser(private val text: String, tokens: List<Token>) :
         }
 
         // @Todo: validate username and password attributes to be
-        // of type string
+        //   of type string
         val attributeNodes = mutableListOf<AstNode>()
-        while (isPeekOfFieldAttributeType())
-            attributeNodes.add(AstAttributeNode(next()))
+        while (isPeekOfFieldAttributeType()) {
+            val next = next()
+            if (next.type == TokenType.COLUMN) {
+                getOrThrowUnexpectedToken(TokenType.EQUALS)
+                val tableToken = getOrThrowUnexpectedToken(TokenType.IDENTIFIER)
+
+                attributeNodes.add(AstAttributeNode(next, tableToken))
+            } else {
+                attributeNodes.add(AstAttributeNode(next))
+            }
+        }
 
         return AstFieldNode(fieldToken, identifierNode, type, attributeNodes)
     }
 
     private fun parseListNode(): AstListNode {
-        val refToken = getOrThrowExpectedToken(TokenType.LIST)
+        val refToken = match(TokenType.LIST)
 
         val typeNode = parseTypeNode()
 
@@ -96,7 +113,7 @@ class Parser(private val text: String, tokens: List<Token>) :
     }
 
     private fun parseRefNode(): AstRefNode {
-        val refToken = getOrThrowExpectedToken(TokenType.REFERENCES)
+        val refToken = match(TokenType.REFERENCES)
 
         val typeNode = parseTypeNode()
 
@@ -104,7 +121,7 @@ class Parser(private val text: String, tokens: List<Token>) :
     }
 
     private fun parseTypeNode(): AstIdentifierNode {
-        val typeToken = getOrThrowExpectedToken(TokenType.IDENTIFIER)
+        val typeToken = match(TokenType.IDENTIFIER)
         return AstIdentifierNode(typeToken)
     }
 
@@ -115,7 +132,7 @@ class Parser(private val text: String, tokens: List<Token>) :
             null
         }
 
-    private fun getOrThrowExpectedToken(expected: TokenType): Token {
+    private fun match(expected: TokenType): Token {
         val token = getNextIfType(expected)
 
         if (token == null) {

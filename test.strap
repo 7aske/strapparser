@@ -1,4 +1,15 @@
-entity User userDetails
+entity User userDetails table=`user`
 	field `id` int serial id
 	field `username` string username
 	field `password` string password
+
+entity Post
+    field `id` int serial id
+    field `content` string column=`body`
+    field `user` references User
+    field `category` list Category
+
+entity Category
+    field `id` int serial id
+    field `name` string
+    field `post` list Post

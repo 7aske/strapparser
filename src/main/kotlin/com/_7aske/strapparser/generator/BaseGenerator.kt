@@ -12,12 +12,4 @@ abstract class BaseGenerator(
     abstract fun getOutputFilePath(): Path
 
     abstract fun generate(): String
-
-    abstract fun getVariableName(): String
-
-    abstract fun getClassName(): String
-
-    abstract fun getPackage(): String
-
-    abstract fun getFQCN(): String
 }

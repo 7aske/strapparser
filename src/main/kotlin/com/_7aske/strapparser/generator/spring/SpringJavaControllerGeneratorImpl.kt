@@ -7,14 +7,13 @@ import com._7aske.strapparser.extensions.uncapitalize
 import com._7aske.strapparser.generator.*
 import com._7aske.strapparser.generator.java.JavaMethodBuilder
 import com._7aske.strapparser.generator.java.Lombok
+import com._7aske.strapparser.generator.spring.SpringJavaPackages.SPRING_BIND_PACKAGE
+import com._7aske.strapparser.generator.spring.SpringJavaPackages.SPRING_DOMAIN_PACKAGE
+import com._7aske.strapparser.generator.spring.SpringJavaPackages.SPRING_HTTP_PACKAGE
 import com.google.googlejavaformat.java.Formatter
 import java.nio.file.Path
 import java.nio.file.Paths
 
-const val RESPONSE_ENTITY = "org.springframework.http.ResponseEntity"
-const val SPRING_BIND_PACKAGE = "org.springframework.web.bind.annotation"
-const val SPRING_DOMAIN_PACKAGE = "org.springframework.data.domain"
-const val REST_CONTROLLER_ANNOTATION = "@$SPRING_BIND_PACKAGE.RestController\n"
 
 class SpringJavaControllerGeneratorImpl(
     service: ServiceGenerator,
@@ -31,6 +30,17 @@ class SpringJavaControllerGeneratorImpl(
         entity = service.entity
         serviceVarName = service.getVariableName()
         serviceFQCN = service.getFQCN()
+        import("$SPRING_BIND_PACKAGE.*")
+        import("$SPRING_DOMAIN_PACKAGE.*")
+        import("$SPRING_HTTP_PACKAGE.ResponseEntity")
+        import("$SPRING_HTTP_PACKAGE.HttpStatus")
+        import("$SPRING_HTTP_PACKAGE.HttpHeaders")
+        import(serviceFQCN)
+        import(entity.getFQCN())
+
+        if (ctx.args.lombok) {
+            import(Lombok.PACKAGE + ".*")
+        }
     }
 
     override fun getOutputFilePath(): Path = Paths.get(
@@ -46,7 +56,8 @@ class SpringJavaControllerGeneratorImpl(
         return formatter.formatSource(
             buildString {
                 append("package ${getPackage()};")
-                append(REST_CONTROLLER_ANNOTATION)
+                append(getImports())
+                append("@RestController")
                 append(Mapping.request(resolveEndpoint()))
 
                 if (ctx.args.lombok) {
@@ -55,11 +66,11 @@ class SpringJavaControllerGeneratorImpl(
 
                 append("public class ").append(getClassName())
                 append("{")
-                append("private final ").append(serviceFQCN).append(" ")
+                append("private final ").append(service.getClassName()).append(" ")
                 append(serviceVarName).append(";")
                 if (!ctx.args.lombok) {
                     append("public ").append(getClassName()).append("(")
-                    append(serviceFQCN).append(" ")
+                    append(service.getClassName()).append(" ")
                     append(serviceVarName)
                     append(") {")
                     append("this.")
@@ -99,10 +110,10 @@ class SpringJavaControllerGeneratorImpl(
             JavaMethodBuilder.of("getAll$entityPlural").apply {
                 annotations.add(Mapping.get().toString())
                 returnType =
-                    "$RESPONSE_ENTITY<$SPRING_DOMAIN_PACKAGE.Page<${entity.getFQCN()}>>"
-                parameters.add(listOf("$SPRING_DOMAIN_PACKAGE.Pageable", "page"))
+                    "ResponseEntity<Page<${entity.getClassName()}>>"
+                parameters.add(listOf("Pageable", "page"))
                 implementation =
-                    "return $RESPONSE_ENTITY.ok($serviceVarName.findAll(page));"
+                    "return ResponseEntity.ok($serviceVarName.findAll(page));"
             }
         )
 
@@ -111,10 +122,10 @@ class SpringJavaControllerGeneratorImpl(
                 annotations.add(
                     Mapping.get(entity.getIdFieldPathVariables()).toString()
                 )
-                returnType = "$RESPONSE_ENTITY<${entity.getFQCN()}>"
+                returnType = "ResponseEntity<${entity.getClassName()}>"
                 parameters.addAll(resolveIdFieldsParameters())
                 implementation =
-                    "return $RESPONSE_ENTITY.ok($serviceVarName.findById(${
+                    "return ResponseEntity.ok($serviceVarName.findById(${
                     entity.getIdFieldVariables()
                     }));"
             }
@@ -127,16 +138,17 @@ class SpringJavaControllerGeneratorImpl(
         append(
             JavaMethodBuilder.of("save$entitySingular").apply {
                 annotations.add(Mapping.post().toString())
-                returnType = "$RESPONSE_ENTITY<${entity.getFQCN()}>"
+                returnType = "ResponseEntity<${entity.getClassName()}>"
                 parameters.add(
                     listOf(
-                        "@$SPRING_BIND_PACKAGE.RequestBody",
-                        entity.getFQCN(),
+                        "@RequestBody",
+                        entity.getClassName(),
                         entity.getVariableName()
                     )
                 )
                 implementation =
-                    "return $RESPONSE_ENTITY.status(org.springframework.http.HttpStatus.CREATED)" +
+                    "return ResponseEntity.status(HttpStatus.CREATED)" +
+                    ".header(HttpHeaders.LOCATION, \"${resolveEndpoint()}/\" + ${entity.getVariableName()}.getId())" +
                     ".body($serviceVarName.save(${entity.getVariableName()}));"
             }
         )
@@ -148,16 +160,16 @@ class SpringJavaControllerGeneratorImpl(
         append(
             JavaMethodBuilder.of("update$entitySingular").apply {
                 annotations.add(Mapping.put().toString())
-                returnType = "$RESPONSE_ENTITY<${entity.getFQCN()}>"
+                returnType = "ResponseEntity<${entity.getClassName()}>"
                 parameters.add(
                     listOf(
-                        "@$SPRING_BIND_PACKAGE.RequestBody",
-                        entity.getFQCN(),
+                        "@RequestBody",
+                        entity.getClassName(),
                         entity.getVariableName()
                     )
                 )
                 implementation =
-                    "return $RESPONSE_ENTITY.ok($serviceVarName.update(${entity.getVariableName()}));"
+                    "return ResponseEntity.ok($serviceVarName.update(${entity.getVariableName()}));"
             }
         )
     }
@@ -170,11 +182,11 @@ class SpringJavaControllerGeneratorImpl(
                 annotations.add(
                     Mapping.delete(entity.getIdFieldPathVariables()).toString()
                 )
-                returnType = "$RESPONSE_ENTITY<Void>"
+                returnType = "ResponseEntity<Void>"
                 parameters.addAll(resolveIdFieldsParameters())
                 implementation =
                     "$serviceVarName.deleteById(${entity.getIdFieldVariables()});" +
-                    "return $RESPONSE_ENTITY.noContent().build();"
+                    "return ResponseEntity.noContent().build();"
             }
         )
     }
@@ -189,7 +201,7 @@ class SpringJavaControllerGeneratorImpl(
     private fun resolveIdFieldsParameters(): List<List<String>> =
         entity.getIdFields().map {
             listOf(
-                "@$SPRING_BIND_PACKAGE.PathVariable",
+                "@PathVariable",
                 dataTypeResolver.resolveDataType(it), it.name
             )
         }
@@ -208,7 +220,7 @@ class Mapping private constructor(
     }
 
     override fun toString(): String {
-        val prefix = "@$SPRING_BIND_PACKAGE.$type"
+        val prefix = "@$type"
 
         if (path.isEmpty())
             return prefix + "\n"

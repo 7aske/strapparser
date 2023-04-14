@@ -3,6 +3,7 @@ package com._7aske.strapparser.generator.spring
 import com._7aske.strapparser.extensions.capitalize
 import com._7aske.strapparser.extensions.plural
 import com._7aske.strapparser.extensions.uncapitalize
+import com._7aske.strapparser.generator.Constants
 import com._7aske.strapparser.generator.DataTypeResolver
 import com._7aske.strapparser.generator.EntityGenerator
 import com._7aske.strapparser.generator.GeneratorContext
@@ -11,6 +12,7 @@ import com._7aske.strapparser.generator.java.Lombok
 import com._7aske.strapparser.parser.TokenType
 import com._7aske.strapparser.parser.definitions.Entity
 import com._7aske.strapparser.parser.definitions.Field
+import com._7aske.strapparser.parser.definitions.RefFieldType
 import com.google.googlejavaformat.java.Formatter
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -21,6 +23,21 @@ class SpringJavaEntityGeneratorImpl(
     dataTypeResolver: DataTypeResolver
 ) : EntityGenerator(entity, ctx, dataTypeResolver) {
     private val formatter = Formatter()
+
+    init {
+        import("java.io.Serializable")
+        import("jakarta.persistence.*")
+        import("com.fasterxml.jackson.annotation.JsonIgnoreProperties")
+
+        if (entity.isUserDetails() && ctx.args.security) {
+            import("org.springframework.security.core.userdetails.UserDetails")
+            import("org.springframework.security.core.GrantedAuthority")
+            import("com.fasterxml.jackson.annotation.JsonIgnore")
+        }
+        if (ctx.args.lombok) {
+            import(Lombok.PACKAGE + ".*")
+        }
+    }
 
     override fun getOutputFilePath(): Path =
         Paths.get(
@@ -37,20 +54,22 @@ class SpringJavaEntityGeneratorImpl(
         val implements = mutableListOf<String>()
         val extends = mutableListOf<String>()
         if (ctx.args.auditable) {
-            extends.add("${getPackage()}.Auditable")
+            // It will be in the same package
+            extends.add("Auditable")
         } else {
-            implements.add("java.io.Serializable")
+            implements.add("Serializable")
         }
 
         if (entity.isUserDetails() && ctx.args.security) {
-            implements.add("org.springframework.security.core.userdetails.UserDetails")
+            implements.add("UserDetails")
         }
 
         return formatter.formatSourceAndFixImports(
             buildString {
                 append("package ${getPackage()};")
-                append("@jakarta.persistence.Table\n")
-                append("@jakarta.persistence.Entity\n")
+                append(getImports())
+                append("@Table(name = \"${entity.getTableName()}\")\n")
+                append("@Entity\n")
                 if (ctx.args.lombok) {
                     append(Lombok.Data)
                     append(Lombok.RequiredArgsConstructor)
@@ -73,7 +92,7 @@ class SpringJavaEntityGeneratorImpl(
 
                 // This can be refactored to not check composite id twice
                 if (hasCompositeId()) {
-                    append("@jakarta.persistence.EmbeddedId\n")
+                    append("@EmbeddedId\n")
                     append("private ")
                     append(getIdClassName())
                     append(" id;")
@@ -96,15 +115,23 @@ class SpringJavaEntityGeneratorImpl(
 
                 if (!ctx.args.lombok) {
                     (toGenerate + referenced).forEach {
+                        if (it.attributes.any { attr ->
+                                attr.value == "username" || attr.value == "password"
+                            }) {
+                            return@forEach
+                        }
+
+                        val name =
+                            if (it.isList()) it.name.plural() else it.name
                         append(
                             JavaMethodBuilder.getter(
-                                it.name,
+                                name,
                                 dataTypeResolver.resolveDataType(it)
                             )
                         )
                         append(
                             JavaMethodBuilder.setter(
-                                it.name,
+                                name,
                                 dataTypeResolver.resolveDataType(it)
                             )
                         )
@@ -144,10 +171,11 @@ class SpringJavaEntityGeneratorImpl(
             append(
                 JavaMethodBuilder.getter(
                     "authorities",
-                    "java.util.Collection<? extends org.springframework.security.core.GrantedAuthority>"
+                    "Collection<? extends GrantedAuthority>"
                 ).apply {
+                    annotations.add("@JsonIgnore")
                     annotations.add("@Override")
-                    implementation = "return java.util.Collections.emptyList();"
+                    implementation = "return Collections.emptyList();"
                 }
             )
 
@@ -161,6 +189,7 @@ class SpringJavaEntityGeneratorImpl(
 
             append(
                 JavaMethodBuilder.of("getPassword").apply {
+                    annotations.add("@JsonIgnore")
                     annotations.add("@Override")
                     returnType = "String"
                     implementation = "return ${getPasswordField()};"
@@ -169,24 +198,32 @@ class SpringJavaEntityGeneratorImpl(
 
             append(
                 JavaMethodBuilder.of("isAccountNonExpired").apply {
+                    annotations.add("@JsonIgnore")
+                    annotations.add("@Override")
                     returnType = "boolean"
                     implementation = "return isEnabled();"
                 }
             )
             append(
                 JavaMethodBuilder.of("isAccountNonLocked").apply {
+                    annotations.add("@JsonIgnore")
+                    annotations.add("@Override")
                     returnType = "boolean"
                     implementation = "return isEnabled();"
                 }
             )
             append(
                 JavaMethodBuilder.of("isCredentialsNonExpired").apply {
+                    annotations.add("@JsonIgnore")
+                    annotations.add("@Override")
                     returnType = "boolean"
                     implementation = "return isEnabled();"
                 }
             )
             append(
                 JavaMethodBuilder.of("isEnabled").apply {
+                    annotations.add("@JsonIgnore")
+                    annotations.add("@Override")
                     returnType = "boolean"
                     implementation = "return true;"
                 }
@@ -202,9 +239,9 @@ class SpringJavaEntityGeneratorImpl(
                 append(Lombok.NoArgsConstructor)
                 append(Lombok.EqualsAndHashCode)
             }
-            append("@jakarta.persistence.Embeddable\n")
+            append("@Embeddable\n")
             append(
-                "public static final class ${getIdClassName()} implements java.io.Serializable {"
+                "public static final class ${getIdClassName()} implements Serializable {"
             )
 
             val idFields = getIdFields()
@@ -257,38 +294,69 @@ class SpringJavaEntityGeneratorImpl(
                 if (ctx.args.lombok) {
                     append(Lombok.EqualsAndHashCodeInclude)
                 }
-                append("@jakarta.persistence.Id\n")
+                append("@Id\n")
             }
 
             if (field.attributes.any { it.token.type == TokenType.SERIAL }) {
-                append("@jakarta.persistence.GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)\n")
+                append("@GeneratedValue(strategy = GenerationType.IDENTITY)\n")
             }
 
             if (field.isRef()) {
                 if (ctx.args.lombok) {
                     append(Lombok.ToStringExclude)
                 }
-                append("@jakarta.persistence.ManyToOne\n")
-                append("@jakarta.persistence.JoinColumn\n")
+                append("@JsonIgnoreProperties(\"${getVariableName().plural()}\")\n")
+                append("@ManyToOne\n")
+                append("@JoinColumn\n")
                 append("private $type ${getVariableName(field)};\n")
             } else if (field.isList()) {
                 if (ctx.args.lombok) {
                     append(Lombok.ToStringExclude)
                 }
-                append("@jakarta.persistence.OneToMany(mappedBy = \"${entity.name.uncapitalize()}\")\n")
-                append(
-                    "private java.util.List<$type> ${
-                    getVariableName(
-                        field
+
+                val referenced = ctx.getReferencedEntity(type)
+                if (referenced != null && referenced.fields.any {
+                        it.isList() && it.type.value == entity.name
+                    }) {
+                    // many to many
+                    append("@JsonIgnoreProperties(\"${getVariableName().plural()}\")\n")
+                    append("@ManyToMany\n")
+                    append("@JoinTable(name=\"${getJoinTable(referenced.getTableName(), entity.getTableName())}\", " +
+                            "joinColumns=@JoinColumn(name=\"${referenced.getTableName()}${Constants.MANY_TO_MANY_COLUMN_SUFFIX}\"), " +
+                            "inverseJoinColumns=@JoinColumn(name=\"${entity.getTableName()}${Constants.MANY_TO_MANY_COLUMN_SUFFIX}\")" +
+                            ")\n")
+                    append(
+                        "private List<$type> ${
+                            getVariableName(
+                                field
+                            )
+                        };\n"
                     )
-                    };\n"
-                )
+
+                } else {
+                    append("@JsonIgnoreProperties(\"${entity.name.uncapitalize()}\")\n")
+                    append("@OneToMany(mappedBy = \"${entity.name.uncapitalize()}\")\n")
+                    append(
+                        "private List<$type> ${
+                            getVariableName(
+                                field
+                            )
+                        };\n"
+                    )
+                }
             } else {
-                append("@jakarta.persistence.Column\n")
+                append("@Column(name = \"${field.getColumnName()}\")\n")
                 type = dataTypeResolver.resolveDataType(type)
                 append("private $type ${getVariableName(field)};\n")
             }
         }
+    }
+
+    private fun getJoinTable(first: String, second: String): String {
+        return listOf(first, second)
+            .sorted()
+            .joinToString("_")
+            .lowercase()
     }
 
     override fun generateSetter(field: Field): String {

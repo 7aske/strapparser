@@ -1,8 +1,10 @@
 package com._7aske.strapparser.parser
 
+import com._7aske.strapparser.extensions.uncapitalize
 import com._7aske.strapparser.parser.ast.*
 import com._7aske.strapparser.parser.definitions.*
-import com._7aske.strapparser.util.ParserUtil.Companion.printLocation
+import com._7aske.strapparser.util.printLocation
+import com._7aske.strapparser.util.snakeCaseToCamelCase
 
 class Interpreter(
     private val text: String,
@@ -74,17 +76,17 @@ class Interpreter(
             .toList()
 
         val attrs = ast.attributes
-            .map { Attribute(it.token, it.token.value) }
+            .map { Attribute(it.token, (it as AstAttributeNode).getValue()) }
 
         return Entity(ast.token, name, fields, attrs)
     }
 
     private fun evaluateFieldNode(ast: AstFieldNode): Field {
-        val name = ast.name.token.value
+        val name = ast.name.token.value.uncapitalize()
         val type = evaluateAstTypeNode(ast.type)
 
         val attrs = ast.attributes
-            .map { Attribute(it.token, it.token.value) }
+            .map { Attribute(it.token, (it as AstAttributeNode).getValue()) }
 
         return Field(ast.token, name, type, attrs)
     }

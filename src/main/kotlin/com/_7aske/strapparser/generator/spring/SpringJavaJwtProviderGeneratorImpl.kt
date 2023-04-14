@@ -1,7 +1,7 @@
 package com._7aske.strapparser.generator.spring
 
 import com._7aske.strapparser.extensions.uncapitalize
-import com._7aske.strapparser.generator.BaseGenerator
+import com._7aske.strapparser.generator.java.JavaClassGenerator
 import com._7aske.strapparser.generator.DataTypeResolver
 import com._7aske.strapparser.generator.GeneratorContext
 import com.google.googlejavaformat.java.Formatter
@@ -11,10 +11,14 @@ import java.nio.file.Paths
 class SpringJavaJwtProviderGeneratorImpl(
     ctx: GeneratorContext,
     dataTypeResolver: DataTypeResolver
-) : BaseGenerator(
+) : JavaClassGenerator(
     ctx, dataTypeResolver
 ) {
     private val formatter = Formatter()
+
+    init {
+        import("org.springframework.stereotype.Service")
+    }
 
     override fun getOutputFilePath(): Path = Paths.get(
         ctx.getOutputLocation(),
@@ -28,7 +32,8 @@ class SpringJavaJwtProviderGeneratorImpl(
     override fun generate(): String = formatter.formatSource(
         buildString {
             append("package ${getPackage()};")
-            append("@org.springframework.stereotype.Service\n")
+            append(getImports())
+            append("@Service\n")
             append("public class ${getClassName()} {")
 
             append(

@@ -5,11 +5,11 @@ import com._7aske.strapparser.extensions.uncapitalize
 import com._7aske.strapparser.generator.*
 import com._7aske.strapparser.generator.java.JavaMethodBuilder
 import com._7aske.strapparser.generator.java.Lombok
+import com._7aske.strapparser.generator.java.OVERRIDE
+import com._7aske.strapparser.generator.spring.SpringJavaPackages.SPRING_DOMAIN_PACKAGE
 import com.google.googlejavaformat.java.Formatter
 import java.nio.file.Path
 import java.nio.file.Paths
-
-const val OVERRIDE = "@Override"
 
 class SpringJavaServiceImplGeneratorImpl(
     private val repository: RepositoryGenerator,
@@ -21,6 +21,23 @@ class SpringJavaServiceImplGeneratorImpl(
     entity, ctx, dataTypeResolver
 ) {
     private val formatter = Formatter()
+
+    init {
+        import("org.springframework.stereotype.Service")
+        import("$SPRING_DOMAIN_PACKAGE.Page")
+        import("$SPRING_DOMAIN_PACKAGE.Pageable")
+        import(entity.getFQCN())
+        import(service.getFQCN())
+        import(repository.getFQCN())
+        if (entity.entity.isUserDetails() && ctx.args.security) {
+            import("org.springframework.security.core.userdetails.UserDetails")
+            import("org.springframework.security.core.userdetails.UsernameNotFoundException")
+        }
+
+        if (ctx.args.lombok) {
+            import(Lombok.PACKAGE + ".*")
+        }
+    }
 
     override fun getOutputFilePath(): Path =
         Paths.get(
@@ -36,17 +53,18 @@ class SpringJavaServiceImplGeneratorImpl(
         formatter.formatSource(
             buildString {
                 append("package ${getPackage()};")
-                append("@org.springframework.stereotype.Service\n")
+                append(getImports())
+                append("@Service\n")
                 if (ctx.args.lombok) {
                     append(Lombok.RequiredArgsConstructor)
                 }
                 append("public class ${getClassName()} implements ")
-                append(service.getFQCN()).append(" {")
-                append("private final ${repository.getFQCN()} ${repository.getVariableName()};")
+                append(service.getClassName()).append(" {")
+                append("private final ${repository.getClassName()} ${repository.getVariableName()};")
 
                 if (!ctx.args.lombok) {
                     append("public ").append(getClassName()).append("(")
-                    append(repository.getFQCN()).append(" ")
+                    append(repository.getClassName()).append(" ")
                         .append(repository.getVariableName())
                     append(") {")
                     append("this.${repository.getVariableName()} = ${repository.getVariableName()};")
@@ -73,8 +91,8 @@ class SpringJavaServiceImplGeneratorImpl(
         JavaMethodBuilder.of("loadUserByUsername").apply {
             annotations.add(OVERRIDE)
             returnType =
-                "org.springframework.security.core.userdetails.UserDetails"
-            throws.add("org.springframework.security.core.userdetails.UsernameNotFoundException")
+                "UserDetails"
+            throws.add("UsernameNotFoundException")
             parameters.add(listOf("String", "username"))
             val usernameField = entity.entity.getUsernameField()
             implementation = if (usernameField == null) {
@@ -82,7 +100,7 @@ class SpringJavaServiceImplGeneratorImpl(
             } else {
                 """
                 return ${repository.getVariableName()}.findBy${entity.entity.getUsernameField()?.name?.capitalize()}(username)
-                    .orElseThrow(() -> new org.springframework.security.core.userdetails.UsernameNotFoundException(String.format("User with username %s not found", username)));
+                    .orElseThrow(() -> new UsernameNotFoundException(String.format("User with username %s not found", username)));
                 """.trimIndent()
             }
         }.build()
@@ -106,10 +124,10 @@ class SpringJavaServiceImplGeneratorImpl(
             annotations.add(OVERRIDE)
             parameters.add(
                 listOf(
-                    entity.getFQCN(), entity.getVariableName()
+                    entity.getClassName(), entity.getVariableName()
                 )
             )
-            returnType = entity.getFQCN()
+            returnType = entity.getClassName()
             implementation =
                 "return ${repository.getVariableName()}.save(${entity.getVariableName()});"
         }.build()
@@ -119,10 +137,10 @@ class SpringJavaServiceImplGeneratorImpl(
             annotations.add(OVERRIDE)
             parameters.add(
                 listOf(
-                    entity.getFQCN(), entity.getVariableName()
+                    entity.getClassName(), entity.getVariableName()
                 )
             )
-            returnType = entity.getFQCN()
+            returnType = entity.getClassName()
             implementation =
                 "return ${repository.getVariableName()}.save(${entity.getVariableName()});"
         }.build()
@@ -134,12 +152,12 @@ class SpringJavaServiceImplGeneratorImpl(
                     annotations.add(OVERRIDE)
                     parameters.add(
                         listOf(
-                            "$SPRING_DOMAIN_PACKAGE.Pageable",
+                            "Pageable",
                             "page"
                         )
                     )
                     returnType =
-                        "$SPRING_DOMAIN_PACKAGE.Page<${entity.getFQCN()}>"
+                        "Page<${entity.getClassName()}>"
                     implementation =
                         "return ${repository.getVariableName()}.findAll(page);"
                 }
@@ -154,11 +172,11 @@ class SpringJavaServiceImplGeneratorImpl(
                             )
                         }
                     )
-                    returnType = entity.getFQCN()
+                    returnType = entity.getClassName()
                     implementation =
                         "return ${repository.getVariableName()}.findById(${entity.getCompositeIdFieldVariables()})" +
-                        ".orElseThrow(() -> " +
-                        "new java.util.NoSuchElementException(\"${entity.getClassName()} not found\"));"
+                                ".orElseThrow(() -> " +
+                                "new NoSuchElementException(\"${entity.getClassName()} not found\"));"
                 }
             )
         }

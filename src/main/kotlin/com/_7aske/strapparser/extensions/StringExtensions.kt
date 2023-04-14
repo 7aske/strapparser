@@ -1,6 +1,9 @@
 package com._7aske.strapparser.extensions
 
 fun String.ordinalIndexOf(str: String, ordinal: Int): Int {
+    if (ordinal == 0)
+        return 0
+
     var n = ordinal
 
     var pos = this.indexOf(str)

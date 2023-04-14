@@ -17,16 +17,25 @@ class SpringJavaRepositoryGeneratorImpl(
 ) : RepositoryGenerator(entity, ctx, dataTypeResolver) {
     private val formatter = Formatter()
 
+    init {
+        import(entity.getFQCN())
+        import("org.springframework.data.jpa.repository.JpaRepository")
+        if (ctx.args.specification) {
+            import("org.springframework.data.jpa.repository.JpaSpecificationExecutor")
+        }
+    }
+
     override fun generate(): String {
         return formatter.formatSource(
             buildString {
                 append("package ${getPackage()};")
+                append(getImports())
 
                 append("public interface ").append(getClassName())
                 append(" extends ")
                 append(
-                    "org.springframework.data.jpa.repository.JpaRepository<${
-                    dataTypeResolver.resolveDataType(entity.getFQCN())
+                    "JpaRepository<${
+                    dataTypeResolver.resolveDataType(entity.getClassName())
                     }, ${
                     entity.getIdFQCN()
                     }>"
@@ -35,7 +44,7 @@ class SpringJavaRepositoryGeneratorImpl(
                 if (ctx.args.specification) {
                     append(", ")
                     append(
-                        "org.springframework.data.jpa.repository.JpaSpecificationExecutor<${
+                        "JpaSpecificationExecutor<${
                         dataTypeResolver.resolveDataType(
                             entity.getClassName()
                         )
@@ -47,7 +56,7 @@ class SpringJavaRepositoryGeneratorImpl(
                     val usernameField = entity.entity.getUsernameField()
                     if (usernameField != null) {
                         append(
-                            "java.util.Optional<${entity.getFQCN()}> " +
+                            "Optional<${entity.getClassName()}> " +
                                 "findBy${usernameField.name.capitalize()}(String username);"
                         )
                     }

@@ -1,9 +1,9 @@
 package com._7aske.strapparser.generator.spring
 
 import com._7aske.strapparser.extensions.uncapitalize
-import com._7aske.strapparser.generator.BaseGenerator
 import com._7aske.strapparser.generator.DataTypeResolver
 import com._7aske.strapparser.generator.GeneratorContext
+import com._7aske.strapparser.generator.java.JavaClassGenerator
 import com._7aske.strapparser.generator.java.Lombok
 import com.google.googlejavaformat.java.Formatter
 import java.nio.file.Path
@@ -12,10 +12,16 @@ import java.nio.file.Paths
 class SpringJavaJwtAuthenticationRequestGeneratorImpl(
     ctx: GeneratorContext,
     dataTypeResolver: DataTypeResolver
-) : BaseGenerator(
+) : JavaClassGenerator(
     ctx, dataTypeResolver
 ) {
     private val formatter = Formatter()
+
+    init {
+        if (ctx.args.lombok) {
+            import(Lombok.PACKAGE + ".*")
+        }
+    }
 
     override fun getOutputFilePath(): Path = Paths.get(
         ctx.getOutputLocation(),
@@ -29,6 +35,7 @@ class SpringJavaJwtAuthenticationRequestGeneratorImpl(
     override fun generate(): String = formatter.formatSource(
         buildString {
             append("package ${getPackage()};")
+            append(getImports())
             if (ctx.args.lombok) {
                 append(Lombok.Data)
             }
@@ -36,11 +43,16 @@ class SpringJavaJwtAuthenticationRequestGeneratorImpl(
             append("private final String username;")
             append("private final String password;")
             if (!ctx.args.lombok) {
-                append(
-                    "public String getToken() {" +
-                        "return token;" +
-                        "}"
-                )
+                append("public ${getClassName()}(String username, String password) {")
+                append("this.username = username;")
+                append("this.password = password;")
+                append("}")
+                append("public String getUsername() {")
+                append("return username;")
+                append("}")
+                append("public String getPassword() {")
+                append("return password;")
+                append("}")
             }
             append("}")
         }

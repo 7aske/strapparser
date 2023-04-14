@@ -1,7 +1,7 @@
 package com._7aske.strapparser.generator.spring
 
 import com._7aske.strapparser.extensions.uncapitalize
-import com._7aske.strapparser.generator.BaseGenerator
+import com._7aske.strapparser.generator.java.JavaClassGenerator
 import com._7aske.strapparser.generator.DataTypeResolver
 import com._7aske.strapparser.generator.GeneratorContext
 import com.google.googlejavaformat.java.Formatter
@@ -14,7 +14,7 @@ const val SECURITY_PACKAGE = "org.springframework.security"
 class SpringJavaSecurityConfigGeneratorImpl(
     ctx: GeneratorContext,
     dataTypeResolver: DataTypeResolver
-) : BaseGenerator(ctx, dataTypeResolver) {
+) : JavaClassGenerator(ctx, dataTypeResolver) {
     private val formatter = Formatter()
 
     override fun getOutputFilePath(): Path = Paths.get(
@@ -42,7 +42,7 @@ class SpringJavaSecurityConfigGeneratorImpl(
                 "return http" +
                     ".csrf().disable().cors().and()" +
                     ".authorizeHttpRequests()" +
-                    ".requestMatchers(\"/**\").authenticated()" +
+                    ".requestMatchers(\"/**\").permitAll()" +
                     ".requestMatchers(\"/login\").permitAll()" +
                     ".and()" +
                     ".addFilterAt(jwtAuthenticationFilter(objectMapper, jwtProvider), " +

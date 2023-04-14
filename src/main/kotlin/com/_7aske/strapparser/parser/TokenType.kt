@@ -1,6 +1,7 @@
 package com._7aske.strapparser.parser
 
 enum class TokenType(val keyword: String) {
+    EQUALS("="),
     ENTITY("entity"),
     FIELD("field"),
     LIST("list"),
@@ -16,7 +17,9 @@ enum class TokenType(val keyword: String) {
     IDENTIFIER("<IDEN>"),
     TYPE("<TYPE>"),
     USERNAME("username"),
-    PASSWORD("password");
+    PASSWORD("password"),
+    TABLE("table"),
+    COLUMN("column");
 
     companion object {
         private val valuesMap: Map<String, TokenType> =
@@ -30,6 +33,7 @@ enum class TokenType(val keyword: String) {
 
         val entityAttributeTypes = arrayOf(
             USER_DETAILS,
+            TABLE
         )
 
         val fieldAttributeTypes = arrayOf(
@@ -38,7 +42,8 @@ enum class TokenType(val keyword: String) {
             UNIQUE,
             SERIAL,
             OWNER,
-            ID
+            ID,
+            COLUMN
         )
     }
 

@@ -30,10 +30,7 @@ open class StringIterator(protected val content: String) : Iterator<Char> {
     }
 
     fun isPeek(value: Char): Boolean {
-        return if (hasNext())
-            content[index] == value
-        else
-            false
+        return hasNext() && content[index] == value
     }
 
     fun eatWhile(predicate: (str: Char) -> Boolean): String {
@@ -51,7 +48,7 @@ open class StringIterator(protected val content: String) : Iterator<Char> {
     }
 
     fun eatWord(): String {
-        return eatWhile { it.isLetterOrDigit() }
+        return eatWhile { it.isLetterOrDigit() || it == '_' }
     }
 
     fun eatFloat(): String {

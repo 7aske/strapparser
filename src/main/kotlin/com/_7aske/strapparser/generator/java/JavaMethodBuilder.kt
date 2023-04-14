@@ -3,6 +3,8 @@ package com._7aske.strapparser.generator.java
 import com._7aske.strapparser.extensions.capitalize
 import com._7aske.strapparser.generator.generic.MethodBuilder
 
+const val OVERRIDE = "@Override"
+
 class JavaMethodBuilder(override val name: String) : MethodBuilder {
     override var modifier: String = "public"
     override var returnType: String = "void"

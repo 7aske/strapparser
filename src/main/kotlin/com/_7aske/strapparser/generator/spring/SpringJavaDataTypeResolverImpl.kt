@@ -18,10 +18,10 @@ class SpringJavaDataTypeResolverImpl : DataTypeResolver {
         "real" to "Double",
         "bool" to "Boolean",
         "boolean" to "Boolean",
-        "timestamp" to "java.time.Instant",
-        "date" to "java.time.LocalDate",
-        "datetime" to "java.time.LocalDateTime",
-        "time" to "java.time.LocalTime",
+        "timestamp" to "Instant",
+        "date" to "LocalDate",
+        "datetime" to "LocalDateTime",
+        "time" to "LocalTime",
     )
 
     override fun resolveDataType(type: String): String =

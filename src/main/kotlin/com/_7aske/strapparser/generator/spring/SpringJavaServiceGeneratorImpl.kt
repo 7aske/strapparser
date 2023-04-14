@@ -5,6 +5,7 @@ import com._7aske.strapparser.generator.DataTypeResolver
 import com._7aske.strapparser.generator.EntityGenerator
 import com._7aske.strapparser.generator.GeneratorContext
 import com._7aske.strapparser.generator.ServiceGenerator
+import com._7aske.strapparser.generator.spring.SpringJavaPackages.SPRING_DOMAIN_PACKAGE
 import com.google.googlejavaformat.java.Formatter
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -17,6 +18,15 @@ class SpringJavaServiceGeneratorImpl(
     entity, ctx, dataTypeResolver
 ) {
     private val formatter = Formatter()
+
+    init {
+        import("$SPRING_DOMAIN_PACKAGE.Page")
+        import("$SPRING_DOMAIN_PACKAGE.Pageable")
+        import(entity.getFQCN())
+        if (entity.entity.isUserDetails() && ctx.args.security) {
+            import("org.springframework.security.core.userdetails.UserDetailsService")
+        }
+    }
 
     override fun getOutputFilePath(): Path =
         Paths.get(
@@ -31,23 +41,24 @@ class SpringJavaServiceGeneratorImpl(
     override fun generate(): String {
         val extends = mutableListOf<String>()
         if (entity.entity.isUserDetails() && ctx.args.security) {
-            extends.add("org.springframework.security.core.userdetails.UserDetailsService")
+            extends.add("UserDetailsService")
         }
 
         return formatter.formatSource(
             buildString {
                 append("package ${getPackage()};")
+                append(getImports())
                 append("public interface ${getClassName()}")
                 if (extends.isNotEmpty()) {
                     append(" extends ")
                     append(extends.joinToString())
                 }
                 append(" {")
-                append("$SPRING_DOMAIN_PACKAGE.Page<${entity.getFQCN()}> ")
-                append("findAll($SPRING_DOMAIN_PACKAGE.Pageable page);")
-                append("${entity.getFQCN()} findById(${entity.getIdFieldsAsArguments()});")
-                append("${entity.getFQCN()} save(${entity.getFQCN()} ${entity.getVariableName()});")
-                append("${entity.getFQCN()} update(${entity.getFQCN()} ${entity.getVariableName()});")
+                append("Page<${entity.getClassName()}> ")
+                append("findAll(Pageable page);")
+                append("${entity.getClassName()} findById(${entity.getIdFieldsAsArguments()});")
+                append("${entity.getClassName()} save(${entity.getClassName()} ${entity.getVariableName()});")
+                append("${entity.getClassName()} update(${entity.getClassName()} ${entity.getVariableName()});")
                 append("void deleteById(${entity.getIdFieldsAsArguments()});")
                 append("}")
             }

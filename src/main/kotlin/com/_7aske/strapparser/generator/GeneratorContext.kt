@@ -10,20 +10,28 @@ import com._7aske.strapparser.parser.definitions.RefFieldType
 
 class GeneratorContext(
     private val entities: Map<String, Entity>,
-    internal val args: Args
+    internal val args: Args,
+    internal val dependencies: MutableCollection<String> = mutableSetOf(),
 ) {
     fun getReferencedEntity(ref: RefFieldType): Entity? =
         entities[ref.value]
+
+    fun getReferencedEntity(ref: String): Entity? =
+        entities[ref]
 
     fun getOutputLocation() =
         args.output.replaceFirst("~", System.getProperty("user.home"))
 
     fun getPackageName(vararg packages: String): String {
-        if (args.domain.isEmpty()) {
-            return packages.joinToString(".")
+        val parts = args.domain.split(".").toMutableList()
+
+        if (args.name.isNotBlank()) {
+            parts.add(args.name)
         }
 
-        return args.domain + "." + packages.joinToString(".")
+        parts.addAll(packages)
+
+        return parts.joinToString(".")
     }
 
     fun getEntityFieldsThatReference(entityName: String): List<Field> {

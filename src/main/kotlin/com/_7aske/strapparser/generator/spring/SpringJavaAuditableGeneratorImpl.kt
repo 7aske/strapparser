@@ -1,7 +1,7 @@
 package com._7aske.strapparser.generator.spring
 
 import com._7aske.strapparser.extensions.uncapitalize
-import com._7aske.strapparser.generator.BaseGenerator
+import com._7aske.strapparser.generator.java.JavaClassGenerator
 import com._7aske.strapparser.generator.DataTypeResolver
 import com._7aske.strapparser.generator.GeneratorContext
 import com._7aske.strapparser.generator.java.JavaMethodBuilder
@@ -13,10 +13,20 @@ import java.nio.file.Paths
 class SpringJavaAuditableGeneratorImpl(
     ctx: GeneratorContext,
     dataTypeResolver: DataTypeResolver
-) : BaseGenerator(
+) : JavaClassGenerator(
     ctx, dataTypeResolver
 ) {
     private val formatter = Formatter()
+
+    init {
+        import("jakarta.persistence.*")
+        import("org.springframework.data.jpa.domain.support.AuditingEntityListener")
+        import("org.springframework.data.annotation.*")
+        import("java.io.Serializable")
+        if (ctx.args.lombok) {
+            import("lombok.*")
+        }
+    }
 
     override fun getOutputFilePath(): Path = Paths.get(
         ctx.getOutputLocation(),
@@ -31,26 +41,29 @@ class SpringJavaAuditableGeneratorImpl(
         formatter.formatSource(
             buildString {
                 append("package ${getPackage()};")
+                append(getImports())
+
                 if (ctx.args.lombok) {
                     append(Lombok.Getter)
                     append(Lombok.Setter)
                     append(Lombok.ProtectedNoArgsConstructor)
                 }
-                append("@jakarta.persistence.MappedSuperclass")
+
+                append("@MappedSuperclass")
                 append(
-                    "@jakarta.persistence.EntityListeners" +
-                        "(org.springframework.data.jpa.domain.support.AuditingEntityListener.class)"
+                    "@EntityListeners" +
+                        "(AuditingEntityListener.class)"
                 )
-                append("public abstract class ${getClassName()} implements java.io.Serializable {")
-                append("@org.springframework.data.annotation.CreatedDate\n")
-                append("private java.time.Instant createdDate;")
-                append("@org.springframework.data.annotation.CreatedBy\n")
-                append("private String createdBy;")
-                append("@org.springframework.data.annotation.LastModifiedDate\n")
-                append("private java.time.Instant lastModifiedDate;")
-                append("@org.springframework.data.annotation.LastModifiedBy\n")
-                append("private String lastModifiedBy;")
-                append("private Integer recordStatus = 1;")
+                append("public abstract class ${getClassName()} implements Serializable {")
+                append("@CreatedDate\n")
+                append("private Instant createdDate;\n\n")
+                append("@CreatedBy\n")
+                append("private String createdBy;\n\n")
+                append("@LastModifiedDate\n")
+                append("private Instant lastModifiedDate;\n\n")
+                append("@LastModifiedBy\n")
+                append("private String lastModifiedBy;\n\n")
+                append("private Integer recordStatus = 1;\n\n")
 
                 if (!ctx.args.lombok) {
                     append("protected ${getClassName()}() {}")
@@ -63,10 +76,10 @@ class SpringJavaAuditableGeneratorImpl(
 
     private fun getGettersAndSetters(): String {
         return buildString {
-            append(JavaMethodBuilder.setter("createdDate", "java.time.Instant"))
-            append(JavaMethodBuilder.getter("createdDate", "java.time.Instant"))
-            append(JavaMethodBuilder.setter("lastModifiedDate", "java.time.Instant"))
-            append(JavaMethodBuilder.getter("lastModifiedDate", "java.time.Instant"))
+            append(JavaMethodBuilder.setter("createdDate", "Instant"))
+            append(JavaMethodBuilder.getter("createdDate", "Instant"))
+            append(JavaMethodBuilder.setter("lastModifiedDate", "Instant"))
+            append(JavaMethodBuilder.getter("lastModifiedDate", "Instant"))
             append(JavaMethodBuilder.setter("createdBy", "String"))
             append(JavaMethodBuilder.getter("createdBy", "String"))
             append(JavaMethodBuilder.setter("lastModifiedBy", "String"))
