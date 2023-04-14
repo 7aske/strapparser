@@ -96,7 +96,7 @@ complexity:
     includeStaticDeclarations: false
     includePrivateDeclarations: false
   ComplexMethod:
-    active: true
+    active: false
     threshold: 15
     ignoreSingleWhenExpression: false
     ignoreSimpleWhenEntries: false

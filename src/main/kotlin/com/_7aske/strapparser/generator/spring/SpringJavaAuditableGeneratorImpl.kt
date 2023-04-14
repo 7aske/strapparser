@@ -1,9 +1,9 @@
 package com._7aske.strapparser.generator.spring
 
 import com._7aske.strapparser.extensions.uncapitalize
-import com._7aske.strapparser.generator.java.JavaClassGenerator
 import com._7aske.strapparser.generator.DataTypeResolver
 import com._7aske.strapparser.generator.GeneratorContext
+import com._7aske.strapparser.generator.java.JavaClassGenerator
 import com._7aske.strapparser.generator.java.JavaMethodBuilder
 import com._7aske.strapparser.generator.java.Lombok
 import com.google.googlejavaformat.java.Formatter

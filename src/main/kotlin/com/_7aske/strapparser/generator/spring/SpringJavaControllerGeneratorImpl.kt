@@ -14,7 +14,6 @@ import com.google.googlejavaformat.java.Formatter
 import java.nio.file.Path
 import java.nio.file.Paths
 
-
 class SpringJavaControllerGeneratorImpl(
     service: ServiceGenerator,
     ctx: GeneratorContext,

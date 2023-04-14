@@ -3,7 +3,6 @@ package com._7aske.strapparser.cli
 import com._7aske.strapparser.generator.AvailableDatabases
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
-import java.util.logging.Logger
 
 class Args(parser: ArgParser) {
     val lombok by parser.flagging(

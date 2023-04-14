@@ -1,6 +1,5 @@
 package com._7aske.strapparser.generator.java
 
-
 class Lombok(
     private val annotation: String,
     private vararg val params: String

@@ -175,8 +175,8 @@ class SpringJavaServiceImplGeneratorImpl(
                     returnType = entity.getClassName()
                     implementation =
                         "return ${repository.getVariableName()}.findById(${entity.getCompositeIdFieldVariables()})" +
-                                ".orElseThrow(() -> " +
-                                "new NoSuchElementException(\"${entity.getClassName()} not found\"));"
+                        ".orElseThrow(() -> " +
+                        "new NoSuchElementException(\"${entity.getClassName()} not found\"));"
                 }
             )
         }

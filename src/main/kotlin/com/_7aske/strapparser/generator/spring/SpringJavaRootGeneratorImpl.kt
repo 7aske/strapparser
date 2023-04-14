@@ -34,7 +34,6 @@ class SpringJavaRootGeneratorImpl(
     override fun getPackage(): String =
         ctx.getPackageName()
 
-
     override fun getFQCN(): String {
         return "${getPackage()}.${getClassName()}"
     }
@@ -49,14 +48,16 @@ class SpringJavaRootGeneratorImpl(
     )
 
     override fun generate(): String =
-        formatter.formatSource(buildString {
-            append("package ${getPackage()};")
-            append(getImports())
-            append("@SpringBootApplication\n")
-            append("public class ${getClassName()} {")
-            append("public static void main(String[] args) {")
-            append("SpringApplication.run(${getClassName()}.class, args);")
-            append("}")
-            append("}")
-        })
+        formatter.formatSource(
+            buildString {
+                append("package ${getPackage()};")
+                append(getImports())
+                append("@SpringBootApplication\n")
+                append("public class ${getClassName()} {")
+                append("public static void main(String[] args) {")
+                append("SpringApplication.run(${getClassName()}.class, args);")
+                append("}")
+                append("}")
+            }
+        )
 }

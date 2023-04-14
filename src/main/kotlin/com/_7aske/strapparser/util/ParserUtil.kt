@@ -51,8 +51,7 @@ fun printLocation(
 }
 
 fun printLocation(text: String, token: Token) =
-    printLocation(text, token.startRow , token.startChar, token.endChar)
-
+    printLocation(text, token.startRow, token.startChar, token.endChar)
 
 fun snakeCaseToCamelCase(text: String) =
     text.split("_").joinToString("") { it.capitalize() }

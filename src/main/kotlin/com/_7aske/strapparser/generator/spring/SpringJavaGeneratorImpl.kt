@@ -22,15 +22,15 @@ class SpringJavaGeneratorImpl : Generator {
         }
 
         when (ctx.args.database) {
-            AvailableDatabases.MARIADB-> {
+            AvailableDatabases.MARIADB -> {
                 ctx.dependencies.add("org.springframework.boot.spring-boot-starter-data-jpa")
                 ctx.dependencies.add("org.mariadb.jdbc.mariadb-java-client")
             }
-            AvailableDatabases.MYSQL-> {
+            AvailableDatabases.MYSQL -> {
                 ctx.dependencies.add("org.springframework.boot.spring-boot-starter-data-jpa")
                 ctx.dependencies.add("mysql.mysql-connector-java")
             }
-            AvailableDatabases.POSTGRES-> {
+            AvailableDatabases.POSTGRES -> {
                 ctx.dependencies.add("org.springframework.boot.spring-boot-starter-data-jpa")
                 ctx.dependencies.add("org.postgresql.postgresql")
             }

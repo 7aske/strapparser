@@ -1,7 +1,8 @@
 package com._7aske.strapparser.generator.generic
 
 class MavenDependency(
-    name: String, version: String?
+    name: String,
+    version: String?
 ) : Dependency(name, version) {
 
     override fun generate(): String = buildString {

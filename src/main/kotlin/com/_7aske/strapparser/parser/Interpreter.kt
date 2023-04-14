@@ -4,7 +4,6 @@ import com._7aske.strapparser.extensions.uncapitalize
 import com._7aske.strapparser.parser.ast.*
 import com._7aske.strapparser.parser.definitions.*
 import com._7aske.strapparser.util.printLocation
-import com._7aske.strapparser.util.snakeCaseToCamelCase
 
 class Interpreter(
     private val text: String,

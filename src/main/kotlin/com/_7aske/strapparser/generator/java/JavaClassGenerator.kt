@@ -5,7 +5,8 @@ import com._7aske.strapparser.generator.DataTypeResolver
 import com._7aske.strapparser.generator.GeneratorContext
 
 abstract class JavaClassGenerator(
-    ctx: GeneratorContext, dataTypeResolver: DataTypeResolver,
+    ctx: GeneratorContext,
+    dataTypeResolver: DataTypeResolver,
 ) : BaseGenerator(ctx, dataTypeResolver) {
 
     protected val imports = mutableSetOf<String>()

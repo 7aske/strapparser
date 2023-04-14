@@ -12,7 +12,6 @@ import com._7aske.strapparser.generator.java.Lombok
 import com._7aske.strapparser.parser.TokenType
 import com._7aske.strapparser.parser.definitions.Entity
 import com._7aske.strapparser.parser.definitions.Field
-import com._7aske.strapparser.parser.definitions.RefFieldType
 import com.google.googlejavaformat.java.Formatter
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -116,8 +115,9 @@ class SpringJavaEntityGeneratorImpl(
                 if (!ctx.args.lombok) {
                     (toGenerate + referenced).forEach {
                         if (it.attributes.any { attr ->
-                                attr.value == "username" || attr.value == "password"
-                            }) {
+                            attr.value == "username" || attr.value == "password"
+                        }
+                        ) {
                             return@forEach
                         }
 
@@ -316,31 +316,35 @@ class SpringJavaEntityGeneratorImpl(
 
                 val referenced = ctx.getReferencedEntity(type)
                 if (referenced != null && referenced.fields.any {
-                        it.isList() && it.type.value == entity.name
-                    }) {
+                    it.isList() && it.type.value == entity.name
+                }
+                ) {
                     // many to many
                     append("@JsonIgnoreProperties(\"${getVariableName().plural()}\")\n")
                     append("@ManyToMany\n")
-                    append("@JoinTable(name=\"${getJoinTable(referenced.getTableName(), entity.getTableName())}\", " +
-                            "joinColumns=@JoinColumn(name=\"${referenced.getTableName()}${Constants.MANY_TO_MANY_COLUMN_SUFFIX}\"), " +
-                            "inverseJoinColumns=@JoinColumn(name=\"${entity.getTableName()}${Constants.MANY_TO_MANY_COLUMN_SUFFIX}\")" +
-                            ")\n")
+                    append(
+                        "@JoinTable(name=\"${getJoinTable(referenced.getTableName(), entity.getTableName())}\", " +
+                            "joinColumns=@JoinColumn(name=\"${referenced.getTableName()}" +
+                            "${Constants.MANY_TO_MANY_COLUMN_SUFFIX}\"), " +
+                            "inverseJoinColumns=@JoinColumn(name=\"${entity.getTableName()}" +
+                            "${Constants.MANY_TO_MANY_COLUMN_SUFFIX}\")" +
+                            ")\n"
+                    )
                     append(
                         "private List<$type> ${
-                            getVariableName(
-                                field
-                            )
+                        getVariableName(
+                            field
+                        )
                         };\n"
                     )
-
                 } else {
                     append("@JsonIgnoreProperties(\"${entity.name.uncapitalize()}\")\n")
                     append("@OneToMany(mappedBy = \"${entity.name.uncapitalize()}\")\n")
                     append(
                         "private List<$type> ${
-                            getVariableName(
-                                field
-                            )
+                        getVariableName(
+                            field
+                        )
                         };\n"
                     )
                 }

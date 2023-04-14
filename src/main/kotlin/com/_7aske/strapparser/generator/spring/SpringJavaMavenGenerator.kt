@@ -19,7 +19,12 @@ class SpringJavaMavenGenerator(
 
     override fun generate(): String = buildString {
         appendLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
-        appendLine("<project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd\">")
+        appendLine(
+            "<project xmlns=\"http://maven.apache.org/POM/4.0.0\"" +
+                " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" +
+                " xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0" +
+                " https://maven.apache.org/xsd/maven-4.0.0.xsd\">"
+        )
         appendLine("    <modelVersion>4.0.0</modelVersion>")
         appendLine("    <parent>")
         appendLine("        <groupId>org.springframework.boot</groupId>")
