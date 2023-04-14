@@ -121,12 +121,22 @@ class SpringJavaGeneratorImpl : Generator {
             if (ctx.args.controller || ctx.args.all) {
                 writeString(controllerOutPath, controllerGenerator.generate())
             }
+        }
 
-            // maven or gradle
-            val buildGenerator = SpringJavaMavenGenerator(ctx, dataTypeResolver)
-            val buildOutPath = buildGenerator.getOutputFilePath()
+        // maven or gradle
+        val buildGenerator = SpringJavaMavenGenerator(ctx, dataTypeResolver)
+        val buildOutPath = buildGenerator.getOutputFilePath()
 
-            writeString(buildOutPath, buildGenerator.generate())
+        writeString(buildOutPath, buildGenerator.generate())
+
+        try {
+            ProcessBuilder("mvn", "wrapper:wrapper")
+                .inheritIO()
+                .directory(Paths.get(ctx.getOutputLocation()).toFile())
+                .start()
+                .waitFor()
+        } catch (ignored: Exception) {
+            println("Failed to generate maven wrapper. Please run 'mvn wrapper:wrapper' manually.")
         }
     }
 }
