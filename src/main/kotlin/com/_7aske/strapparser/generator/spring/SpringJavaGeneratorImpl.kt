@@ -143,7 +143,6 @@ class SpringJavaGeneratorImpl : Generator {
             }
         }
 
-
         // maven or gradle
         val buildGenerator = SpringJavaMavenGenerator(ctx, dataTypeResolver)
         val buildOutPath = buildGenerator.getOutputFilePath()

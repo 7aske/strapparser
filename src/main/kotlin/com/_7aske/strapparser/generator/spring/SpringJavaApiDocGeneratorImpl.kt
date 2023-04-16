@@ -15,6 +15,8 @@ import com.google.googlejavaformat.java.Formatter
 import java.nio.file.Path
 import java.nio.file.Paths
 
+private const val SECURITY_REQ = "@SecurityRequirement(name = \"bearerAuth\")"
+
 class SpringJavaApiDocGeneratorImpl(
     private val controllerGenerator: ControllerGenerator,
     ctx: GeneratorContext,
@@ -26,8 +28,6 @@ class SpringJavaApiDocGeneratorImpl(
         controllerGenerator.getEntityGenerator().getVariableName()
 
     private val formatter = Formatter()
-
-    private val SECURITY_REQ = "@SecurityRequirement(name = \"bearerAuth\")"
 
     init {
         import("$OPENAPI_PACKAGE.Operation")
@@ -86,14 +86,14 @@ class SpringJavaApiDocGeneratorImpl(
                 .apply {
                     annotations.add(
                         "@Operation(tags = \"${entityVariableName}\"," +
-                                " summary = \"Get all ${entityVariableName.plural()}\"," +
-                                " description = \"Get all ${entityVariableName.plural()} with pagination\")"
+                            " summary = \"Get all ${entityVariableName.plural()}\"," +
+                            " description = \"Get all ${entityVariableName.plural()} with pagination\")"
                     )
                     if (ctx.args.security) {
                         annotations.add(SECURITY_REQ)
                     }
                     returnType =
-                        "ResponseEntity<Page<${entityClassName}>>"
+                        "ResponseEntity<Page<$entityClassName>>"
                     parameters.add(
                         listOf(
                             "@ParameterObject",
@@ -106,13 +106,15 @@ class SpringJavaApiDocGeneratorImpl(
 
         append(
             JavaMethodBuilder.abstract("get${entityClassName}ById").apply {
-                annotations.add("@Operation(tags = \"${entityVariableName}\"," +
+                annotations.add(
+                    "@Operation(tags = \"${entityVariableName}\"," +
                         " summary = \"Get ${entityVariableName}\"," +
-                        " description = \"Get ${entityVariableName} by id\")")
+                        " description = \"Get $entityVariableName by id\")"
+                )
                 if (ctx.args.security) {
                     annotations.add(SECURITY_REQ)
                 }
-                returnType = "ResponseEntity<${entityClassName}>"
+                returnType = "ResponseEntity<$entityClassName>"
                 parameters.addAll(
                     controllerGenerator.resolveIdFieldsParameters().map {
                         it.toMutableList().apply {
@@ -121,8 +123,8 @@ class SpringJavaApiDocGeneratorImpl(
                                 "@Parameter(description = \"$entityClassName id\")"
                             )
                         }
-                    })
-
+                    }
+                )
             }
         )
     }
@@ -130,13 +132,15 @@ class SpringJavaApiDocGeneratorImpl(
     private fun generatePostEndpoints(): String = buildString {
         append(
             JavaMethodBuilder.abstract("save$entityClassName").apply {
-                annotations.add("@Operation(tags = \"${entityVariableName}\"," +
+                annotations.add(
+                    "@Operation(tags = \"${entityVariableName}\"," +
                         " summary = \"Save ${entityVariableName}\"," +
-                        " description = \"Save ${entityVariableName}\")")
+                        " description = \"Save ${entityVariableName}\")"
+                )
                 if (ctx.args.security) {
                     annotations.add(SECURITY_REQ)
                 }
-                returnType = "ResponseEntity<${entityClassName}>"
+                returnType = "ResponseEntity<$entityClassName>"
                 parameters.add(
                     listOf(
                         "@RequestBody",
@@ -144,7 +148,6 @@ class SpringJavaApiDocGeneratorImpl(
                         entityVariableName,
                     )
                 )
-
             }
         )
     }
@@ -152,13 +155,15 @@ class SpringJavaApiDocGeneratorImpl(
     private fun generatePutEndpoints(): String = buildString {
         append(
             JavaMethodBuilder.abstract("update$entityClassName").apply {
-                annotations.add("@Operation(tags = \"${entityVariableName}\"," +
+                annotations.add(
+                    "@Operation(tags = \"${entityVariableName}\"," +
                         " summary = \"Update ${entityVariableName}\"," +
-                        " description = \"Update ${entityVariableName}\")")
+                        " description = \"Update ${entityVariableName}\")"
+                )
                 if (ctx.args.security) {
                     annotations.add(SECURITY_REQ)
                 }
-                returnType = "ResponseEntity<${entityClassName}>"
+                returnType = "ResponseEntity<$entityClassName>"
                 parameters.add(
                     listOf(
                         "@RequestBody",
@@ -174,9 +179,11 @@ class SpringJavaApiDocGeneratorImpl(
 
         append(
             JavaMethodBuilder.abstract("delete${entityClassName}ById").apply {
-                annotations.add("@Operation(tags = \"${entityVariableName}\"," +
+                annotations.add(
+                    "@Operation(tags = \"${entityVariableName}\"," +
                         " summary = \"Delete ${entityVariableName}\"," +
-                        " description = \"Delete $entityVariableName by id\")")
+                        " description = \"Delete $entityVariableName by id\")"
+                )
                 if (ctx.args.security) {
                     annotations.add(SECURITY_REQ)
                 }
@@ -189,9 +196,9 @@ class SpringJavaApiDocGeneratorImpl(
                                 "@Parameter(description = \"$entityClassName id\")"
                             )
                         }
-                    })
+                    }
+                )
             }
         )
     }
-
 }

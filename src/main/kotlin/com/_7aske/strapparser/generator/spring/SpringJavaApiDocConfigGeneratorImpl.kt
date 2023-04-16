@@ -75,5 +75,4 @@ class SpringJavaApiDocConfigGeneratorImpl(
             appendLine("public class ${getClassName()} {}")
         }
     )
-
 }
