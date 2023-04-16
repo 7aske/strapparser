@@ -1,7 +1,6 @@
 package com._7aske.strapparser.generator.spring
 
 import com._7aske.strapparser.extensions.capitalize
-import com._7aske.strapparser.extensions.uncapitalize
 import com._7aske.strapparser.generator.*
 import com._7aske.strapparser.generator.java.JavaMethodBuilder
 import com._7aske.strapparser.generator.java.Lombok
@@ -181,15 +180,9 @@ class SpringJavaServiceImplGeneratorImpl(
             )
         }
 
-    override fun getVariableName(): String =
-        getClassName().uncapitalize()
-
     override fun getClassName(): String =
         entity.getClassName() + "ServiceImpl"
 
     override fun getPackage(): String =
         ctx.getPackageName("service", "impl")
-
-    override fun getFQCN(): String =
-        getPackage() + "." + getClassName()
 }

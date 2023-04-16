@@ -54,6 +54,10 @@ class SpringJavaGeneratorImpl : Generator {
             )
         }
 
+        val configGenerator = SpringJavaConfigGeneratorImpl(ctx, dataTypeResolver)
+
+        writeString(configGenerator.getOutputFilePath(), configGenerator.generate())
+
         if (ctx.args.security) {
             ctx.dependencies.add("org.springframework.boot.spring-boot-starter-security")
             ctx.dependencies.add("com.auth0.java-jwt:4.2.1")

@@ -1,7 +1,6 @@
 package com._7aske.strapparser.generator.spring
 
 import com._7aske.strapparser.extensions.capitalize
-import com._7aske.strapparser.extensions.uncapitalize
 import com._7aske.strapparser.generator.DataTypeResolver
 import com._7aske.strapparser.generator.EntityGenerator
 import com._7aske.strapparser.generator.GeneratorContext
@@ -66,17 +65,11 @@ class SpringJavaRepositoryGeneratorImpl(
         )
     }
 
-    override fun getVariableName(): String =
-        getClassName().uncapitalize()
-
     override fun getClassName(): String =
         entity.getClassName() + "Repository"
 
     override fun getPackage(): String =
         ctx.getPackageName("repository")
-
-    override fun getFQCN(): String =
-        getPackage() + "." + getClassName()
 
     override fun getOutputFilePath(): Path = Paths.get(
         ctx.getOutputLocation(),

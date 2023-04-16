@@ -92,9 +92,6 @@ class SpringJavaControllerGeneratorImpl(
         )
     }
 
-    override fun getVariableName(): String =
-        getClassName().uncapitalize()
-
     override fun resolveEndpoint(): String =
         "api/v1/" + entity.getClassName()
             .toKebabCase()
@@ -108,9 +105,6 @@ class SpringJavaControllerGeneratorImpl(
         entity.getClassName() + "Controller"
 
     override fun getPackage(): String = ctx.getPackageName("controller")
-
-    override fun getFQCN(): String =
-        getPackage() + "." + getClassName()
 
     private fun generateGetEndpoints(): String = buildString {
         val entitySingular = entity.getVariableName().capitalize()

@@ -1,6 +1,5 @@
 package com._7aske.strapparser.generator.spring
 
-import com._7aske.strapparser.extensions.uncapitalize
 import com._7aske.strapparser.generator.DataTypeResolver
 import com._7aske.strapparser.generator.EntityGenerator
 import com._7aske.strapparser.generator.GeneratorContext
@@ -65,15 +64,9 @@ class SpringJavaServiceGeneratorImpl(
         )
     }
 
-    override fun getVariableName(): String =
-        getClassName().uncapitalize()
-
     override fun getClassName(): String =
         entity.getClassName() + "Service"
 
     override fun getPackage(): String =
         ctx.getPackageName("service")
-
-    override fun getFQCN(): String =
-        getPackage() + "." + getClassName()
 }

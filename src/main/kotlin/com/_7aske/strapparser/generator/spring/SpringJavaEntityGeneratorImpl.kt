@@ -396,12 +396,6 @@ class SpringJavaEntityGeneratorImpl(
     override fun getPackage(): String =
         ctx.getPackageName("entity")
 
-    override fun getFQCN(): String =
-        getPackage() + "." + getClassName()
-
-    override fun getVariableName(): String =
-        entity.name.uncapitalize()
-
     override fun getVariableName(field: Field): String {
         return if (field.isList()) {
             field.name.plural()

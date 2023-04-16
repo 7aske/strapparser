@@ -28,18 +28,11 @@ class SpringJavaApiDocConfigGeneratorImpl(
         imports.remove("java.time.*")
     }
 
-    override fun getVariableName(): String {
-        TODO("Not yet implemented")
-    }
-
     override fun getClassName(): String =
         "ApiDocConfig"
 
     override fun getPackage(): String =
         ctx.getPackageName("config")
-
-    override fun getFQCN(): String =
-        getPackage() + "." + getClassName()
 
     override fun getOutputFilePath(): Path =
         Paths.get(

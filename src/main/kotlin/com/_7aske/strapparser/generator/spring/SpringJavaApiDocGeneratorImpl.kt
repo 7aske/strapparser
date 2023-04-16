@@ -44,18 +44,11 @@ class SpringJavaApiDocGeneratorImpl(
         }
     }
 
-    override fun getVariableName(): String {
-        TODO("Not yet implemented")
-    }
-
     override fun getClassName(): String =
         "${entityClassName}Api"
 
     override fun getPackage(): String =
         ctx.getPackageName("api")
-
-    override fun getFQCN(): String =
-        getPackage() + "." + getClassName()
 
     override fun getOutputFilePath(): Path = Paths.get(
         ctx.getOutputLocation(),

@@ -1,6 +1,5 @@
 package com._7aske.strapparser.generator.spring
 
-import com._7aske.strapparser.extensions.uncapitalize
 import com._7aske.strapparser.generator.DataTypeResolver
 import com._7aske.strapparser.generator.GeneratorContext
 import com._7aske.strapparser.generator.java.JavaClassGenerator
@@ -55,11 +54,7 @@ class SpringJavaJwtAuthenticationResponseGeneratorImpl(
         }
     )
 
-    override fun getVariableName(): String = getClassName().uncapitalize()
-
     override fun getClassName(): String = "JwtAuthenticationResponse"
 
     override fun getPackage(): String = ctx.getPackageName("security")
-
-    override fun getFQCN(): String = getPackage() + "." + getClassName()
 }

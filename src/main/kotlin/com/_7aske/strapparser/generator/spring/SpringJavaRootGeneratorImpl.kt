@@ -22,10 +22,6 @@ class SpringJavaRootGeneratorImpl(
         import("org.springframework.boot.autoconfigure.SpringBootApplication")
     }
 
-    override fun getVariableName(): String {
-        throw NotImplementedError()
-    }
-
     override fun getClassName(): String {
         val name = snakeCaseToCamelCase(ctx.args.name)
         return "${name}Application"
@@ -33,10 +29,6 @@ class SpringJavaRootGeneratorImpl(
 
     override fun getPackage(): String =
         ctx.getPackageName()
-
-    override fun getFQCN(): String {
-        return "${getPackage()}.${getClassName()}"
-    }
 
     override fun getOutputFilePath(): Path = Paths.get(
         ctx.getOutputLocation(),
