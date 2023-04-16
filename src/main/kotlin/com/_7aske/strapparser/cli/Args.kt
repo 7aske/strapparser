@@ -20,6 +20,11 @@ class Args(parser: ArgParser) {
         help = "generate security implementation"
     )
 
+    val doc by parser.flagging(
+        "--doc",
+        help = "generate openapi documentation"
+    )
+
     val all by parser.flagging(
         "-A", "--all",
         help = "generate all (entity, repository, service, controller)"

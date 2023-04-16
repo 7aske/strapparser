@@ -11,4 +11,7 @@ abstract class ControllerGenerator(
     abstract fun generateEndpoints(): String
 
     abstract fun resolveEndpoint(): String
+
+    abstract fun getEntityGenerator(): EntityGenerator
+    abstract fun resolveIdFieldsParameters(): List<List<String>>
 }

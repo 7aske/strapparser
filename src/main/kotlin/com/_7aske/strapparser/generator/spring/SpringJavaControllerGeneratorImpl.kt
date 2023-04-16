@@ -40,6 +40,9 @@ class SpringJavaControllerGeneratorImpl(
         if (ctx.args.lombok) {
             import(Lombok.PACKAGE + ".*")
         }
+        if (ctx.args.doc) {
+            import("${ctx.getPackageName("api")}.${entity.getClassName()}Api")
+        }
     }
 
     override fun getOutputFilePath(): Path = Paths.get(
@@ -64,6 +67,11 @@ class SpringJavaControllerGeneratorImpl(
                 }
 
                 append("public class ").append(getClassName())
+                if (ctx.args.doc) {
+                    append(" implements ")
+                    append(entity.getClassName())
+                    append("Api")
+                }
                 append("{")
                 append("private final ").append(service.getClassName()).append(" ")
                 append(serviceVarName).append(";")
@@ -93,6 +101,9 @@ class SpringJavaControllerGeneratorImpl(
             .uncapitalize()
             .plural()
 
+    override fun getEntityGenerator(): EntityGenerator =
+        entity
+
     override fun getClassName(): String =
         entity.getClassName() + "Controller"
 
@@ -107,6 +118,9 @@ class SpringJavaControllerGeneratorImpl(
 
         append(
             JavaMethodBuilder.of("getAll$entityPlural").apply {
+                if (ctx.args.doc) {
+                    annotations.add("@Override")
+                }
                 annotations.add(Mapping.get().toString())
                 returnType =
                     "ResponseEntity<Page<${entity.getClassName()}>>"
@@ -118,6 +132,9 @@ class SpringJavaControllerGeneratorImpl(
 
         append(
             JavaMethodBuilder.of("get${entitySingular}ById").apply {
+                if (ctx.args.doc) {
+                    annotations.add("@Override")
+                }
                 annotations.add(
                     Mapping.get(entity.getIdFieldPathVariables()).toString()
                 )
@@ -136,6 +153,9 @@ class SpringJavaControllerGeneratorImpl(
 
         append(
             JavaMethodBuilder.of("save$entitySingular").apply {
+                if (ctx.args.doc) {
+                    annotations.add("@Override")
+                }
                 annotations.add(Mapping.post().toString())
                 returnType = "ResponseEntity<${entity.getClassName()}>"
                 parameters.add(
@@ -158,6 +178,9 @@ class SpringJavaControllerGeneratorImpl(
 
         append(
             JavaMethodBuilder.of("update$entitySingular").apply {
+                if (ctx.args.doc) {
+                    annotations.add("@Override")
+                }
                 annotations.add(Mapping.put().toString())
                 returnType = "ResponseEntity<${entity.getClassName()}>"
                 parameters.add(
@@ -178,6 +201,9 @@ class SpringJavaControllerGeneratorImpl(
 
         append(
             JavaMethodBuilder.of("delete${entitySingular}ById").apply {
+                if (ctx.args.doc) {
+                    annotations.add("@Override")
+                }
                 annotations.add(
                     Mapping.delete(entity.getIdFieldPathVariables()).toString()
                 )
@@ -197,7 +223,7 @@ class SpringJavaControllerGeneratorImpl(
         append(generateDeleteEndpoints())
     }
 
-    private fun resolveIdFieldsParameters(): List<List<String>> =
+    override fun resolveIdFieldsParameters(): List<List<String>> =
         entity.getIdFields().map {
             listOf(
                 "@PathVariable",

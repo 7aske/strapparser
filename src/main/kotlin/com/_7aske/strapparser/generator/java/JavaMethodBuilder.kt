@@ -7,6 +7,7 @@ const val OVERRIDE = "@Override"
 
 class JavaMethodBuilder(override val name: String) : MethodBuilder {
     override var modifier: String = "public"
+    override var abstract: Boolean = false
     override var returnType: String = "void"
     override var implementation: String =
         "throw new IllegalStateException(\"Not implemented\");"
@@ -15,6 +16,11 @@ class JavaMethodBuilder(override val name: String) : MethodBuilder {
     override val throws: MutableList<String> = mutableListOf()
 
     companion object {
+        fun abstract(name: String) = JavaMethodBuilder(name).apply {
+            abstract = true
+            modifier = ""
+        }
+
         fun of(name: String) = JavaMethodBuilder(name)
 
         fun setter(field: String, type: String): MethodBuilder {
@@ -54,8 +60,12 @@ class JavaMethodBuilder(override val name: String) : MethodBuilder {
                 append(" throws ")
                 append(throws.joinToString(", "))
             }
-            append("{")
-            append(implementation)
-            append("}")
+            if (abstract) {
+                append(";")
+            } else {
+                append("{")
+                append(implementation)
+                append("}")
+            }
         }
 }

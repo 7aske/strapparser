@@ -61,6 +61,14 @@ class SpringJavaGeneratorImpl : Generator {
             SpringJavaSecurityGeneratorImpl(ctx, dataTypeResolver).generate()
         }
 
+        if (ctx.args.doc) {
+            ctx.dependencies.add("org.springdoc.springdoc-openapi-starter-webmvc-ui:2.0.4")
+            val openapiGenerator = SpringJavaApiDocConfigGeneratorImpl(ctx, dataTypeResolver)
+            val openapiOutPath = openapiGenerator.getOutputFilePath()
+
+            writeString(openapiOutPath, openapiGenerator.generate())
+        }
+
         entities.values.forEach {
 
             // Entity
@@ -121,7 +129,20 @@ class SpringJavaGeneratorImpl : Generator {
             if (ctx.args.controller || ctx.args.all) {
                 writeString(controllerOutPath, controllerGenerator.generate())
             }
+
+            if (ctx.args.doc) {
+
+                val docGenerator = SpringJavaApiDocGeneratorImpl(
+                    controllerGenerator,
+                    ctx,
+                    dataTypeResolver
+                )
+                val docOutPath = docGenerator.getOutputFilePath()
+
+                writeString(docOutPath, docGenerator.generate())
+            }
         }
+
 
         // maven or gradle
         val buildGenerator = SpringJavaMavenGenerator(ctx, dataTypeResolver)
