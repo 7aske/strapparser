@@ -8,11 +8,11 @@ plugins {
 }
 
 val exports = listOf(
-    "--add-exports", "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
-    "--add-exports", "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
-    "--add-exports", "jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
-    "--add-exports", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-    "--add-exports", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"
+    "--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+    "--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+    "--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+    "--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+    "--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
 )
 
 group = "com._7aske"
@@ -26,7 +26,7 @@ dependencies {
     detekt("io.gitlab.arturbosch.detekt:detekt-formatting:1.21.0")
     detekt("io.gitlab.arturbosch.detekt:detekt-cli:1.21.0")
     implementation("com.google.googlejavaformat:google-java-format:1.15.0")
-    implementation("com.xenomachina:kotlin-argparser:2.0.7")
+    implementation("com.github.ajalt.clikt:clikt:3.5.2")
     implementation("com.facebook:ktfmt:0.40")
     testImplementation(kotlin("test"))
 }

@@ -3,8 +3,8 @@ package com._7aske.strapparser.generator.spring
 import com._7aske.strapparser.extensions.capitalize
 import com._7aske.strapparser.generator.DataTypeResolver
 import com._7aske.strapparser.generator.GeneratorContext
+import com._7aske.strapparser.generator.java.Formatter
 import com._7aske.strapparser.generator.java.JavaClassGenerator
-import com.google.googlejavaformat.java.Formatter
 import java.nio.file.Path
 import java.nio.file.Paths
 

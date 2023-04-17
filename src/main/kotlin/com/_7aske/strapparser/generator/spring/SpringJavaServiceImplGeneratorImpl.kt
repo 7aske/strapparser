@@ -2,11 +2,11 @@ package com._7aske.strapparser.generator.spring
 
 import com._7aske.strapparser.extensions.capitalize
 import com._7aske.strapparser.generator.*
+import com._7aske.strapparser.generator.java.Formatter
 import com._7aske.strapparser.generator.java.JavaMethodBuilder
 import com._7aske.strapparser.generator.java.Lombok
 import com._7aske.strapparser.generator.java.OVERRIDE
 import com._7aske.strapparser.generator.spring.SpringPackages.SPRING_DOMAIN_PACKAGE
-import com.google.googlejavaformat.java.Formatter
 import java.nio.file.Path
 import java.nio.file.Paths
 

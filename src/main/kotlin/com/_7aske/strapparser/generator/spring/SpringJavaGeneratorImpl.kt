@@ -8,11 +8,11 @@ import com._7aske.strapparser.parser.StrapFileResolver
 import com._7aske.strapparser.util.writeString
 import java.nio.file.Paths
 
-class SpringJavaGeneratorImpl : Generator {
+class SpringJavaGeneratorImpl(private val args: Args) : Generator {
     private val dataTypeResolver = SpringJavaDataTypeResolverImpl()
 
-    override fun generate(args: Args) {
-        val entities = StrapFileResolver().resolve(Paths.get(args.inputFile))
+    override fun generate() {
+        val entities = StrapFileResolver().resolve(args.inputFile)
             .associateBy { it.name }
 
         val ctx = GeneratorContext(entities, args)

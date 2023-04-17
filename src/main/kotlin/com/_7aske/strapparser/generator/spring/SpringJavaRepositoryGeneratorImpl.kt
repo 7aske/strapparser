@@ -5,7 +5,7 @@ import com._7aske.strapparser.generator.DataTypeResolver
 import com._7aske.strapparser.generator.EntityGenerator
 import com._7aske.strapparser.generator.GeneratorContext
 import com._7aske.strapparser.generator.RepositoryGenerator
-import com.google.googlejavaformat.java.Formatter
+import com._7aske.strapparser.generator.java.Formatter
 import java.nio.file.Path
 import java.nio.file.Paths
 

@@ -7,12 +7,12 @@ import com._7aske.strapparser.generator.Constants
 import com._7aske.strapparser.generator.DataTypeResolver
 import com._7aske.strapparser.generator.EntityGenerator
 import com._7aske.strapparser.generator.GeneratorContext
+import com._7aske.strapparser.generator.java.Formatter
 import com._7aske.strapparser.generator.java.JavaMethodBuilder
 import com._7aske.strapparser.generator.java.Lombok
 import com._7aske.strapparser.parser.TokenType
 import com._7aske.strapparser.parser.definitions.Entity
 import com._7aske.strapparser.parser.definitions.Field
-import com.google.googlejavaformat.java.Formatter
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -63,7 +63,7 @@ class SpringJavaEntityGeneratorImpl(
             implements.add("UserDetails")
         }
 
-        return formatter.formatSourceAndFixImports(
+        return formatter.formatSource(
             buildString {
                 append("package ${getPackage()};")
                 append(getImports())
