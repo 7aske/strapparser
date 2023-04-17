@@ -62,18 +62,23 @@ class Args(parser: ArgParser) {
 
     val domain by parser.storing(
         "-d", "--domain",
-        help = "domain/package of the project (e.g. com.example.app)"
-    )
+        help = "domain/package of the project (e.g. com.example)"
+    ).default("com.example")
 
     val name by parser.storing(
         "-n", "--name",
         help = "name of project (e.g. app)"
-    )
+    ).default("app")
 
     val javaVersion by parser.storing(
         "--javaVersion",
         help = "java version"
     ).default("17")
+
+    val kotlinVersion by parser.storing(
+        "--kotlinVersion",
+        help = "kotlin version"
+    ).default("1.8.20")
 
     val springVersion by parser.storing(
         "--springVersion",
@@ -85,13 +90,39 @@ class Args(parser: ArgParser) {
         help = "packaging type (e.g. jar, war)"
     ).default("jar")
 
-    val database: AvailableDatabases by parser.mapping(
-        "--mongodb" to AvailableDatabases.MONGODB,
-        "--mariadb" to AvailableDatabases.MARIADB,
-        "--mysql" to AvailableDatabases.MYSQL,
-        "--postgres" to AvailableDatabases.POSTGRES,
+    val database: AvailableDatabases by parser.storing(
+        "--database",
         help = "database type (e.g. mysql, postgres, mariadb, mongodb)"
-    ).default(AvailableDatabases.POSTGRES)
+    ) {
+        AvailableDatabases.valueOf(this.uppercase())
+    }.default(AvailableDatabases.POSTGRES)
+
+    val databaseUser: String? by parser.storing(
+        "--databaseUser",
+        help = "database user"
+    ).default(null)
+
+    val databasePass: String? by parser.storing(
+        "--databasePass",
+        help = "database password"
+    ).default(null)
+
+    val databaseHost: String? by parser.storing(
+        "--databaseHost",
+        help = "database host"
+    ).default(null)
+
+    val databasePort: Int? by parser.storing(
+        "--databasePort",
+        help = "database port"
+    ) {
+        this.toInt()
+    }.default(null)
+
+    val databaseName: String? by parser.storing(
+        "--databaseName",
+        help = "database name"
+    ).default(null)
 
     val inputFile by parser.positional(
         "FILE",

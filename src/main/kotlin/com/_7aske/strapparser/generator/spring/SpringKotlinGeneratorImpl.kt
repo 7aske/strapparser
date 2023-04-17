@@ -8,8 +8,8 @@ import com._7aske.strapparser.parser.StrapFileResolver
 import com._7aske.strapparser.util.writeString
 import java.nio.file.Paths
 
-class SpringJavaGeneratorImpl : Generator {
-    private val dataTypeResolver = SpringJavaDataTypeResolverImpl()
+class SpringKotlinGeneratorImpl : Generator {
+    private val dataTypeResolver = SpringKotlinDataTypeResolverImpl()
 
     override fun generate(args: Args) {
         val entities = StrapFileResolver().resolve(Paths.get(args.inputFile))
@@ -40,13 +40,13 @@ class SpringJavaGeneratorImpl : Generator {
             }
         }
 
-        val rootGenerator = SpringJavaRootGeneratorImpl(ctx, dataTypeResolver)
+        val rootGenerator = SpringKotlinRootGeneratorImpl(ctx, dataTypeResolver)
 
         writeString(rootGenerator.getOutputFilePath(), rootGenerator.generate())
 
         if (ctx.args.auditable) {
             val auditableGenerator =
-                SpringJavaAuditableGeneratorImpl(ctx, dataTypeResolver)
+                SpringKotlinAuditableGeneratorImpl(ctx, dataTypeResolver)
 
             writeString(
                 auditableGenerator.getOutputFilePath(),
@@ -54,7 +54,7 @@ class SpringJavaGeneratorImpl : Generator {
             )
         }
 
-        val configGenerator = SpringJavaConfigGeneratorImpl(ctx, dataTypeResolver)
+        val configGenerator = SpringKotlinConfigGeneratorImpl(ctx, dataTypeResolver)
 
         writeString(configGenerator.getOutputFilePath(), configGenerator.generate())
 
@@ -62,13 +62,21 @@ class SpringJavaGeneratorImpl : Generator {
             ctx.dependencies.add("org.springframework.boot.spring-boot-starter-security")
             ctx.dependencies.add("com.auth0.java-jwt:4.2.1")
 
-            SpringJavaSecurityGeneratorImpl(ctx, dataTypeResolver).generate()
+            SpringKotlinSecurityGeneratorImpl(ctx, dataTypeResolver).generate()
         }
+
+        val configurationGenerator = SpringConfigurationGeneratorImpl(
+            ctx,
+            dataTypeResolver
+        )
+
+        val configurationOutPath = configurationGenerator.getOutputFilePath()
+        writeString(configurationOutPath, configurationGenerator.generate())
 
         if (ctx.args.doc) {
             ctx.dependencies.add("org.springframework.boot.spring-boot-starter-validation")
             ctx.dependencies.add("org.springdoc.springdoc-openapi-starter-webmvc-ui:2.0.4")
-            val openapiGenerator = SpringJavaApiDocConfigGeneratorImpl(ctx, dataTypeResolver)
+            val openapiGenerator = SpringKotlinApiDocConfigGeneratorImpl(ctx, dataTypeResolver)
             val openapiOutPath = openapiGenerator.getOutputFilePath()
 
             writeString(openapiOutPath, openapiGenerator.generate())
@@ -78,7 +86,7 @@ class SpringJavaGeneratorImpl : Generator {
 
             // Entity
             val entityGenerator =
-                SpringJavaEntityGeneratorImpl(it, ctx, dataTypeResolver)
+                SpringKotlinEntityGeneratorImpl(it, ctx, dataTypeResolver)
             val entityOutPath = entityGenerator.getOutputFilePath()
 
             if (ctx.args.entity || ctx.args.all) {
@@ -86,7 +94,7 @@ class SpringJavaGeneratorImpl : Generator {
             }
 
             // Repository
-            val repositoryGenerator = SpringJavaRepositoryGeneratorImpl(
+            val repositoryGenerator = SpringKotlinRepositoryGeneratorImpl(
                 entityGenerator,
                 ctx,
                 dataTypeResolver
@@ -98,7 +106,7 @@ class SpringJavaGeneratorImpl : Generator {
             }
 
             // Service
-            val serviceGenerator = SpringJavaServiceGeneratorImpl(
+            val serviceGenerator = SpringKotlinServiceGeneratorImpl(
                 entityGenerator,
                 ctx,
                 dataTypeResolver
@@ -108,9 +116,9 @@ class SpringJavaGeneratorImpl : Generator {
             if (ctx.args.service || ctx.args.all) {
                 writeString(serviceOutPath, serviceGenerator.generate())
             }
-
+//
             // ServiceImpl
-            val serviceImplGenerator = SpringJavaServiceImplGeneratorImpl(
+            val serviceImplGenerator = SpringKotlinServiceImplGeneratorImpl(
                 repositoryGenerator,
                 serviceGenerator,
                 entityGenerator,
@@ -122,9 +130,9 @@ class SpringJavaGeneratorImpl : Generator {
             if (ctx.args.service || ctx.args.all) {
                 writeString(serviceImplOutPath, serviceImplGenerator.generate())
             }
-
+//
             // Controller
-            val controllerGenerator = SpringJavaControllerGeneratorImpl(
+            val controllerGenerator = SpringKotlinControllerGeneratorImpl(
                 serviceGenerator,
                 ctx,
                 dataTypeResolver
@@ -135,17 +143,9 @@ class SpringJavaGeneratorImpl : Generator {
                 writeString(controllerOutPath, controllerGenerator.generate())
             }
 
-            val configurationGenerator = SpringConfigurationGeneratorImpl(
-                ctx,
-                dataTypeResolver
-            )
-
-            val configurationOutPath = configurationGenerator.getOutputFilePath()
-            writeString(configurationOutPath, configurationGenerator.generate())
-
             if (ctx.args.doc) {
 
-                val docGenerator = SpringJavaApiDocGeneratorImpl(
+                val docGenerator = SpringKotlinApiDocGeneratorImpl(
                     controllerGenerator,
                     ctx,
                     dataTypeResolver
@@ -157,7 +157,7 @@ class SpringJavaGeneratorImpl : Generator {
         }
 
         // maven or gradle
-        val buildGenerator = SpringJavaMavenGenerator(ctx, dataTypeResolver)
+        val buildGenerator = SpringKotlinMavenGenerator(ctx, dataTypeResolver)
         val buildOutPath = buildGenerator.getOutputFilePath()
 
         writeString(buildOutPath, buildGenerator.generate())

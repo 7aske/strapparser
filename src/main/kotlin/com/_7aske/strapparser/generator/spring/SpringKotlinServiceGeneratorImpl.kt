@@ -3,22 +3,24 @@ package com._7aske.strapparser.generator.spring
 import com._7aske.strapparser.generator.DataTypeResolver
 import com._7aske.strapparser.generator.EntityGenerator
 import com._7aske.strapparser.generator.GeneratorContext
-import com._7aske.strapparser.generator.ServiceGenerator
+import com._7aske.strapparser.generator.kotlin.Formatter
+import com._7aske.strapparser.generator.kotlin.KotlinClassGenerator
 import com._7aske.strapparser.generator.spring.SpringPackages.SPRING_DOMAIN_PACKAGE
-import com.google.googlejavaformat.java.Formatter
 import java.nio.file.Path
 import java.nio.file.Paths
 
-class SpringJavaServiceGeneratorImpl(
-    entity: EntityGenerator,
+class SpringKotlinServiceGeneratorImpl(
+    internal val entity: EntityGenerator,
     ctx: GeneratorContext,
     dataTypeResolver: DataTypeResolver
-) : ServiceGenerator(
-    entity, ctx, dataTypeResolver
+) : KotlinClassGenerator(
+    ctx, dataTypeResolver
 ) {
     private val formatter = Formatter()
 
     init {
+        imports.remove("java.util.*")
+        imports.remove("java.time.*")
         import("$SPRING_DOMAIN_PACKAGE.Page")
         import("$SPRING_DOMAIN_PACKAGE.Pageable")
         import(entity.getFQCN())
@@ -32,9 +34,9 @@ class SpringJavaServiceGeneratorImpl(
             ctx.getOutputLocation(),
             "src",
             "main",
-            "java",
+            "kotlin",
             getPackage().replace(".", separator),
-            this.getClassName() + ".java"
+            this.getClassName() + ".kt"
         )
 
     override fun generate(): String {
@@ -45,20 +47,25 @@ class SpringJavaServiceGeneratorImpl(
 
         return formatter.formatSource(
             buildString {
-                append("package ${getPackage()};")
-                append(getImports())
-                append("public interface ${getClassName()}")
+                appendLine("package ${getPackage()}")
+                appendLine(getImports())
+                append("interface ${getClassName()}")
                 if (extends.isNotEmpty()) {
-                    append(" extends ")
+                    append(" : ")
                     append(extends.joinToString())
                 }
-                append(" {")
-                append("Page<${entity.getClassName()}> ")
-                append("findAll(Pageable page);")
-                append("${entity.getClassName()} findById(${entity.getIdFieldsAsArguments()});")
-                append("${entity.getClassName()} save(${entity.getClassName()} ${entity.getVariableName()});")
-                append("${entity.getClassName()} update(${entity.getClassName()} ${entity.getVariableName()});")
-                append("void deleteById(${entity.getIdFieldsAsArguments()});")
+                appendLine(" {")
+                appendLine("fun findAll(page: Pageable): Page<${entity.getClassName()}> ")
+                appendLine("fun findById(${entity.getIdFieldsAsArguments()}): ${entity.getClassName()}")
+                appendLine(
+                    "fun save(${entity.getVariableName()}: ${entity.getClassName()}): ${
+                    entity.getClassName()}"
+                )
+                appendLine(
+                    "fun update(${entity.getVariableName()}: ${entity.getClassName()}): ${
+                    entity.getClassName()} "
+                )
+                appendLine("fun deleteById(${entity.getIdFieldsAsArguments()})")
                 append("}")
             }
         )

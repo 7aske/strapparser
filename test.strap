@@ -1,4 +1,4 @@
-entity User userDetails table=`user`
+entity User userDetails table=`user_account`
 	field `id` int serial id
 	field `username` string username
 	field `password` string password
@@ -13,3 +13,8 @@ entity Category
     field `id` int serial id
     field `name` string
     field `post` list Post
+
+entity WithCompositeId
+    field `id1` int id
+    field `id2` int id
+    field `name` string

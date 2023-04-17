@@ -1,27 +1,31 @@
 package com._7aske.strapparser.generator.spring
 
 import com._7aske.strapparser.extensions.capitalize
-import com._7aske.strapparser.generator.*
-import com._7aske.strapparser.generator.java.JavaMethodBuilder
-import com._7aske.strapparser.generator.java.Lombok
-import com._7aske.strapparser.generator.java.OVERRIDE
+import com._7aske.strapparser.generator.DataTypeResolver
+import com._7aske.strapparser.generator.EntityGenerator
+import com._7aske.strapparser.generator.GeneratorContext
+import com._7aske.strapparser.generator.RepositoryGenerator
+import com._7aske.strapparser.generator.kotlin.Formatter
+import com._7aske.strapparser.generator.kotlin.KotlinClassGenerator
+import com._7aske.strapparser.generator.kotlin.KotlinMethodBuilder
 import com._7aske.strapparser.generator.spring.SpringPackages.SPRING_DOMAIN_PACKAGE
-import com.google.googlejavaformat.java.Formatter
 import java.nio.file.Path
 import java.nio.file.Paths
 
-class SpringJavaServiceImplGeneratorImpl(
+class SpringKotlinServiceImplGeneratorImpl(
     private val repository: RepositoryGenerator,
-    private val service: ServiceGenerator,
-    entity: EntityGenerator,
+    private val service: SpringKotlinServiceGeneratorImpl,
+    internal val entity: EntityGenerator,
     ctx: GeneratorContext,
     dataTypeResolver: DataTypeResolver
-) : ServiceImplGenerator(
-    entity, ctx, dataTypeResolver
+) : KotlinClassGenerator(
+    ctx, dataTypeResolver
 ) {
     private val formatter = Formatter()
 
     init {
+        imports.remove("java.util.*")
+        imports.remove("java.time.*")
         import("org.springframework.stereotype.Service")
         import("$SPRING_DOMAIN_PACKAGE.Page")
         import("$SPRING_DOMAIN_PACKAGE.Pageable")
@@ -32,10 +36,6 @@ class SpringJavaServiceImplGeneratorImpl(
             import("org.springframework.security.core.userdetails.UserDetails")
             import("org.springframework.security.core.userdetails.UsernameNotFoundException")
         }
-
-        if (ctx.args.lombok) {
-            import(Lombok.PACKAGE + ".*")
-        }
     }
 
     override fun getOutputFilePath(): Path =
@@ -43,9 +43,9 @@ class SpringJavaServiceImplGeneratorImpl(
             ctx.getOutputLocation(),
             "src",
             "main",
-            "java",
+            "kotlin",
             getPackage().replace(".", separator),
-            this.getClassName() + ".java"
+            this.getClassName() + ".kt"
         )
 
     override fun generate(): String =
@@ -54,22 +54,13 @@ class SpringJavaServiceImplGeneratorImpl(
                 append("package ${getPackage()};")
                 append(getImports())
                 append("@Service\n")
-                if (ctx.args.lombok) {
-                    append(Lombok.RequiredArgsConstructor)
-                }
-                append("public class ${getClassName()} implements ")
-                append(service.getClassName()).append(" {")
-                append("private final ${repository.getClassName()} ${repository.getVariableName()};")
-
-                if (!ctx.args.lombok) {
-                    append("public ").append(getClassName()).append("(")
-                    append(repository.getClassName()).append(" ")
-                        .append(repository.getVariableName())
-                    append(") {")
-                    append("this.${repository.getVariableName()} = ${repository.getVariableName()};")
-                    append("}")
-                }
-
+                append("open class ${getClassName()}")
+                appendLine("( ")
+                appendLine("private val ${repository.getVariableName()}: ${repository.getClassName()}")
+                append(" )")
+                append(": ")
+                append(service.getClassName())
+                append(" {")
                 append(generateBody())
                 append("}")
             }
@@ -87,26 +78,25 @@ class SpringJavaServiceImplGeneratorImpl(
         }
 
     private fun generateUserDetailsLoadByUsername(): String =
-        JavaMethodBuilder.of("loadUserByUsername").apply {
-            annotations.add(OVERRIDE)
+        KotlinMethodBuilder.of("loadUserByUsername").apply {
+            override = true
             returnType =
                 "UserDetails"
-            throws.add("UsernameNotFoundException")
             parameters.add(listOf("String", "username"))
             val usernameField = entity.entity.getUsernameField()
             implementation = if (usernameField == null) {
-                "throw new IllegalStateException(\"Not yet implemented\");"
+                "TODO(\"Not yet implemented\")"
             } else {
                 """
                 return ${repository.getVariableName()}.findBy${entity.entity.getUsernameField()?.name?.capitalize()}(username)
-                    .orElseThrow(() -> new UsernameNotFoundException(String.format("User with username %s not found", username)));
+                    ?: throw UsernameNotFoundException(String.format("User with username %s not found", username))
                 """.trimIndent()
             }
         }.build()
 
     private fun generateDeleteMethods(): String =
-        JavaMethodBuilder.of("deleteById").apply {
-            annotations.add(OVERRIDE)
+        KotlinMethodBuilder.of("deleteById").apply {
+            override = true
             parameters.addAll(
                 entity.getIdFields().map {
                     listOf(
@@ -115,12 +105,12 @@ class SpringJavaServiceImplGeneratorImpl(
                 }
             )
             implementation =
-                "${repository.getVariableName()}.deleteById(${entity.getCompositeIdFieldVariables()});"
+                "${repository.getVariableName()}.deleteById(${entity.getCompositeIdFieldVariables()})"
         }.build()
 
     private fun generateUpdateMethods(): String =
-        JavaMethodBuilder.of("update").apply {
-            annotations.add(OVERRIDE)
+        KotlinMethodBuilder.of("update").apply {
+            override = true
             parameters.add(
                 listOf(
                     entity.getClassName(), entity.getVariableName()
@@ -128,12 +118,12 @@ class SpringJavaServiceImplGeneratorImpl(
             )
             returnType = entity.getClassName()
             implementation =
-                "return ${repository.getVariableName()}.save(${entity.getVariableName()});"
+                "return ${repository.getVariableName()}.save(${entity.getVariableName()})"
         }.build()
 
     private fun generateCreateMethods(): String =
-        JavaMethodBuilder.of("save").apply {
-            annotations.add(OVERRIDE)
+        KotlinMethodBuilder.of("save").apply {
+            override = true
             parameters.add(
                 listOf(
                     entity.getClassName(), entity.getVariableName()
@@ -141,14 +131,14 @@ class SpringJavaServiceImplGeneratorImpl(
             )
             returnType = entity.getClassName()
             implementation =
-                "return ${repository.getVariableName()}.save(${entity.getVariableName()});"
+                "return ${repository.getVariableName()}.save(${entity.getVariableName()})"
         }.build()
 
     private fun generateReadMethods(): String =
         buildString {
             append(
-                JavaMethodBuilder.of("findAll").apply {
-                    annotations.add(OVERRIDE)
+                KotlinMethodBuilder.of("findAll").apply {
+                    override = true
                     parameters.add(
                         listOf(
                             "Pageable",
@@ -158,12 +148,12 @@ class SpringJavaServiceImplGeneratorImpl(
                     returnType =
                         "Page<${entity.getClassName()}>"
                     implementation =
-                        "return ${repository.getVariableName()}.findAll(page);"
+                        "return ${repository.getVariableName()}.findAll(page)"
                 }
             )
             append(
-                JavaMethodBuilder.of("findById").apply {
-                    annotations.add(OVERRIDE)
+                KotlinMethodBuilder.of("findById").apply {
+                    override = true
                     parameters.addAll(
                         entity.getIdFields().map {
                             listOf(
@@ -174,8 +164,8 @@ class SpringJavaServiceImplGeneratorImpl(
                     returnType = entity.getClassName()
                     implementation =
                         "return ${repository.getVariableName()}.findById(${entity.getCompositeIdFieldVariables()})" +
-                        ".orElseThrow(() -> " +
-                        "new NoSuchElementException(\"${entity.getClassName()} not found\"));"
+                        ".orElseThrow { " +
+                        "NoSuchElementException(\"${entity.getClassName()} not found\") }"
                 }
             )
         }

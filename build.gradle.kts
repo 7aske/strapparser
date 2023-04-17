@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.7.21"
+    kotlin("jvm") version "1.8.20"
     application
     id("io.gitlab.arturbosch.detekt") version "1.21.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
@@ -27,6 +27,7 @@ dependencies {
     detekt("io.gitlab.arturbosch.detekt:detekt-cli:1.21.0")
     implementation("com.google.googlejavaformat:google-java-format:1.15.0")
     implementation("com.xenomachina:kotlin-argparser:2.0.7")
+    implementation("com.facebook:ktfmt:0.40")
     testImplementation(kotlin("test"))
 }
 
@@ -64,6 +65,18 @@ tasks.withType<KotlinCompile> {
 
 tasks.detekt {
     autoCorrect = true
+}
+
+tasks.register("install") {
+    dependsOn("shadowJar")
+
+    doLast {
+        val jar = tasks.getByName("shadowJar") as Jar
+        val file = jar.archiveFile.get().asFile
+        val installDir = File(System.getProperty("user.home"), ".strap-parser")
+        installDir.mkdirs()
+        file.copyTo(File(installDir, "strap-parser.jar"), true)
+    }
 }
 
 application {

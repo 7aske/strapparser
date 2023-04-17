@@ -4,25 +4,21 @@ import com._7aske.strapparser.extensions.capitalize
 import com._7aske.strapparser.extensions.plural
 import com._7aske.strapparser.extensions.toKebabCase
 import com._7aske.strapparser.extensions.uncapitalize
-import com._7aske.strapparser.generator.DataTypeResolver
-import com._7aske.strapparser.generator.EntityGenerator
-import com._7aske.strapparser.generator.GeneratorContext
-import com._7aske.strapparser.generator.ServiceGenerator
-import com._7aske.strapparser.generator.java.JavaClassGenerator
-import com._7aske.strapparser.generator.java.JavaMethodBuilder
-import com._7aske.strapparser.generator.java.Lombok
+import com._7aske.strapparser.generator.*
+import com._7aske.strapparser.generator.kotlin.Formatter
+import com._7aske.strapparser.generator.kotlin.KotlinClassGenerator
+import com._7aske.strapparser.generator.kotlin.KotlinMethodBuilder
 import com._7aske.strapparser.generator.spring.SpringPackages.SPRING_BIND_PACKAGE
 import com._7aske.strapparser.generator.spring.SpringPackages.SPRING_DOMAIN_PACKAGE
 import com._7aske.strapparser.generator.spring.SpringPackages.SPRING_HTTP_PACKAGE
-import com.google.googlejavaformat.java.Formatter
 import java.nio.file.Path
 import java.nio.file.Paths
 
-class SpringJavaControllerGeneratorImpl(
-    internal val service: ServiceGenerator,
+class SpringKotlinControllerGeneratorImpl(
+    internal val service: SpringKotlinServiceGeneratorImpl,
     ctx: GeneratorContext,
     dataTypeResolver: DataTypeResolver
-) : JavaClassGenerator(ctx, dataTypeResolver), SpringControllerGenerator {
+) : KotlinClassGenerator(ctx, dataTypeResolver), SpringControllerGenerator {
 
     private val formatter = Formatter()
     private val entity: EntityGenerator = service.entity
@@ -38,9 +34,6 @@ class SpringJavaControllerGeneratorImpl(
         import(serviceFQCN)
         import(entity.getFQCN())
 
-        if (ctx.args.lombok) {
-            import(Lombok.PACKAGE + ".*")
-        }
         if (ctx.args.doc) {
             import("${ctx.getPackageName("api")}.${entity.getClassName()}Api")
         }
@@ -50,43 +43,33 @@ class SpringJavaControllerGeneratorImpl(
         ctx.getOutputLocation(),
         "src",
         "main",
-        "java",
+        "kotlin",
         getPackage().replace(".", separator),
-        this.getClassName() + ".java"
+        this.getClassName() + ".kt"
     )
 
     override fun generate(): String {
         return formatter.formatSource(
             buildString {
-                append("package ${getPackage()};")
+                appendLine("package ${getPackage()}")
                 append(getImports())
-                append("@RestController")
-                append(Mapping.request(resolveEndpoint()))
+                appendLine("@RestController")
+                appendLine(Mapping.request(resolveEndpoint()))
 
-                if (ctx.args.lombok) {
-                    append(Lombok.RequiredArgsConstructor)
-                }
+                append("class ").append(getClassName())
+                append("( private val ")
+                append(serviceVarName)
+                append(": ")
+                append(service.getClassName())
+                append(")")
 
-                append("public class ").append(getClassName())
                 if (ctx.args.doc) {
-                    append(" implements ")
+                    append(" : ")
                     append(entity.getClassName())
                     append("Api")
                 }
+
                 append("{")
-                append("private final ").append(service.getClassName()).append(" ")
-                append(serviceVarName).append(";")
-                if (!ctx.args.lombok) {
-                    append("public ").append(getClassName()).append("(")
-                    append(service.getClassName()).append(" ")
-                    append(serviceVarName)
-                    append(") {")
-                    append("this.")
-                    append(serviceVarName)
-                    append("=")
-                    append(serviceVarName).append(";")
-                    append("}")
-                }
                 append(generateEndpoints())
                 append("}")
             }
@@ -112,23 +95,23 @@ class SpringJavaControllerGeneratorImpl(
         val entityPlural = entitySingular.plural()
 
         append(
-            JavaMethodBuilder.of("getAll$entityPlural").apply {
+            KotlinMethodBuilder.of("getAll$entityPlural").apply {
                 if (ctx.args.doc) {
-                    annotations.add("@Override")
+                    override = true
                 }
                 annotations.add(Mapping.get().toString())
                 returnType =
                     "ResponseEntity<Page<${entity.getClassName()}>>"
                 parameters.add(listOf("Pageable", "page"))
                 implementation =
-                    "return ResponseEntity.ok($serviceVarName.findAll(page));"
+                    "return ResponseEntity.ok($serviceVarName.findAll(page))"
             }
         )
 
         append(
-            JavaMethodBuilder.of("get${entitySingular}ById").apply {
+            KotlinMethodBuilder.of("get${entitySingular}ById").apply {
                 if (ctx.args.doc) {
-                    annotations.add("@Override")
+                    override = true
                 }
                 annotations.add(
                     Mapping.get(entity.getIdFieldPathVariables()).toString()
@@ -147,9 +130,9 @@ class SpringJavaControllerGeneratorImpl(
         val entitySingular = entity.getVariableName().capitalize()
 
         append(
-            JavaMethodBuilder.of("save$entitySingular").apply {
+            KotlinMethodBuilder.of("save$entitySingular").apply {
                 if (ctx.args.doc) {
-                    annotations.add("@Override")
+                    override = true
                 }
                 annotations.add(Mapping.post().toString())
                 returnType = "ResponseEntity<${entity.getClassName()}>"
@@ -162,8 +145,8 @@ class SpringJavaControllerGeneratorImpl(
                 )
                 implementation =
                     "return ResponseEntity.status(HttpStatus.CREATED)" +
-                    ".header(HttpHeaders.LOCATION, \"${resolveEndpoint()}/\" + ${entity.getVariableName()}.getId())" +
-                    ".body($serviceVarName.save(${entity.getVariableName()}));"
+                    ".header(HttpHeaders.LOCATION, \"${resolveEndpoint()}/\" + ${entity.getVariableName()}.id)" +
+                    ".body($serviceVarName.save(${entity.getVariableName()}))"
             }
         )
     }
@@ -172,9 +155,9 @@ class SpringJavaControllerGeneratorImpl(
         val entitySingular = entity.getVariableName().capitalize()
 
         append(
-            JavaMethodBuilder.of("update$entitySingular").apply {
+            KotlinMethodBuilder.of("update$entitySingular").apply {
                 if (ctx.args.doc) {
-                    annotations.add("@Override")
+                    override = true
                 }
                 annotations.add(Mapping.put().toString())
                 returnType = "ResponseEntity<${entity.getClassName()}>"
@@ -186,7 +169,7 @@ class SpringJavaControllerGeneratorImpl(
                     )
                 )
                 implementation =
-                    "return ResponseEntity.ok($serviceVarName.update(${entity.getVariableName()}));"
+                    "return ResponseEntity.ok($serviceVarName.update(${entity.getVariableName()}))"
             }
         )
     }
@@ -195,9 +178,9 @@ class SpringJavaControllerGeneratorImpl(
         val entitySingular = entity.getVariableName().capitalize()
 
         append(
-            JavaMethodBuilder.of("delete${entitySingular}ById").apply {
+            KotlinMethodBuilder.of("delete${entitySingular}ById").apply {
                 if (ctx.args.doc) {
-                    annotations.add("@Override")
+                    override = true
                 }
                 annotations.add(
                     Mapping.delete(entity.getIdFieldPathVariables()).toString()
@@ -205,7 +188,7 @@ class SpringJavaControllerGeneratorImpl(
                 returnType = "ResponseEntity<Void>"
                 parameters.addAll(resolveIdFieldsParameters())
                 implementation =
-                    "$serviceVarName.deleteById(${entity.getIdFieldVariables()});" +
+                    "$serviceVarName.deleteById(${entity.getIdFieldVariables()})\n" +
                     "return ResponseEntity.noContent().build();"
             }
         )
