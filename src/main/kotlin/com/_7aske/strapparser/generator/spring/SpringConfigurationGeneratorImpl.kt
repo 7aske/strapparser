@@ -74,8 +74,8 @@ class SpringConfigurationGeneratorImpl(
                 appendLine("spring.data.mongodb.host=${ctx.args.databaseHost ?: "localhost"}")
                 appendLine("spring.data.mongodb.port=${ctx.args.databasePort ?: "27017"}")
                 appendLine("spring.data.mongodb.database=${ctx.args.databaseName ?: "admin"}")
-                appendLine("spring.data.mongodb.username=${ctx.args.databaseName ?: "admin"}")
-                appendLine("spring.data.mongodb.password=${ctx.args.databaseName ?: ""}")
+                appendLine("spring.data.mongodb.username=${ctx.args.databaseUser ?: "admin"}")
+                appendLine("spring.data.mongodb.password=${ctx.args.databasePass ?: ""}")
             }
         }
 }
