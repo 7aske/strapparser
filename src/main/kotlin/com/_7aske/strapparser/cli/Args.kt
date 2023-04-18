@@ -4,140 +4,147 @@ import com._7aske.strapparser.generator.AvailableDatabases
 import com._7aske.strapparser.generator.Generator
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.path
+import java.nio.file.Path
+import java.nio.file.Paths
 
 class Args : CliktCommand(printHelpOnEmptyArgs = true) {
     val lombok: Boolean by option(
-        "-l", "--lombok",
-        help = "use lombok (only for java)"
+        "--lombok",
+        help = "Use Lombok (useful only for Java)"
     ).flag(default = false)
 
     val auditable: Boolean by option(
-        "-a", "--auditable",
-        help = "add auditing superclass"
+        "--auditable",
+        help = "Add database auditing"
     ).flag(default = false)
 
     val security: Boolean by option(
-        "-s", "--security",
-        help = "generate security implementation"
+        "--security",
+        help = "Generate basic JWT security implementation"
     ).flag(default = false)
 
     val doc: Boolean by option(
         "--doc",
-        help = "generate openapi documentation"
+        help = "Generate openapi documentation and configuration"
     ).flag(default = false)
 
     val all: Boolean by option(
         "-A", "--all",
-        help = "generate all (entity, repository, service, controller)"
+        help = "Generate everything (entity, repository, service, controller)"
     ).flag(default = false)
 
     val entity: Boolean by option(
         "-E", "--entity",
-        help = "generate entities"
+        help = "Generate entities"
     ).flag(default = false)
 
     val repository: Boolean by option(
         "-R", "--repository",
-        help = "generate repositories"
+        help = "Generate repositories"
     ).flag(default = false)
 
     val service: Boolean by option(
         "-S", "--service",
-        help = "generate services"
+        help = "Generate services"
     ).flag(default = false)
 
     val controller: Boolean by option(
         "-C", "--controller",
-        help = "generate controllers"
+        help = "Generate controllers"
     ).flag(default = false)
 
     val specification: Boolean by option(
-        "-p", "--specification",
-        help = "repositories will extend JPA Specification"
+        "--specification",
+        help = "Repositories will extend JPA Specification"
     ).flag(default = false)
 
     val output: String by option(
         "-o", "--output",
-        help = "output directory",
-    ).default("./")
+        help = "Output directory (project root)",
+    ).path(
+        mustExist = false,
+        canBeDir = true,
+        canBeFile = false,
+    ).convert { it.toString() }.default("./")
 
     val domain: String by option(
         "-d", "--domain",
-        help = "domain/package of the project (e.g. com.example)"
+        help = "Domain/package of the project (e.g. com.example)"
     ).default("com.example")
 
     val name by option(
         "-n", "--name",
-        help = "name of project (e.g. app)"
+        help = "Name of project (e.g. app)"
     ).default("app")
 
     val javaVersion by option(
         "--javaVersion",
-        help = "java version"
+        help = "Java version"
     ).default("17")
 
     val kotlinVersion by option(
         "--kotlinVersion",
-        help = "kotlin version"
+        help = "Kotlin version"
     ).default("1.8.20")
 
     val springVersion by option(
         "--springVersion",
-        help = "spring boot version"
+        help = "Spring Boot version"
     ).default("3.0.5")
 
     val packaging by option(
         "--packaging",
-        help = "packaging type (e.g. jar, war)"
+        help = "Packaging type (e.g. jar, war)"
     ).default("jar")
 
     val database: AvailableDatabases by option(
         "--database",
-        help = "database type (e.g. mysql, postgres, mariadb, mongodb)"
+        help = "Database type (e.g. mysql, postgres, mariadb, mongodb)"
     ).enum<AvailableDatabases>()
         .default(AvailableDatabases.POSTGRES)
 
     val databaseUser: String? by option(
         "--databaseUser",
-        help = "database user"
+        help = "Database user"
     )
 
     val databasePass: String? by option(
         "--databasePass",
-        help = "database password"
+        help = "Database password"
     )
 
     val databaseHost: String? by option(
         "--databaseHost",
-        help = "database host"
+        help = "Database host"
     )
 
     val databasePort: Int? by option(
         "--databasePort",
-        help = "database port"
+        help = "Database port"
     ).int()
 
     val databaseName: String? by option(
         "--databaseName",
-        help = "database name"
+        help = "Database name"
     )
 
     val language: String by option(
         "--language",
-        help = "language (e.g. java, kotlin)"
+        help = "Language (e.g. java, kotlin)"
     ).default("kotlin")
 
     val inputFile by argument(
-        help = "input .strap file"
+        help = "Input .strap file"
     ).path(
         mustExist = true,
-        canBeDir = true,
+        canBeDir = false,
         canBeFile = true,
         mustBeReadable = true
     )
