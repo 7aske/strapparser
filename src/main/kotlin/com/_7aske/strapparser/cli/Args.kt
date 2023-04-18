@@ -11,8 +11,6 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.path
-import java.nio.file.Path
-import java.nio.file.Paths
 
 class Args : CliktCommand(printHelpOnEmptyArgs = true) {
     val lombok: Boolean by option(
