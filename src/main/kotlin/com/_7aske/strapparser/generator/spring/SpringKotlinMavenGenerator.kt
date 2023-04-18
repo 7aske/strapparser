@@ -103,20 +103,6 @@ class SpringKotlinMavenGenerator(
         appendLine("                        </goals>")
         appendLine("                    </execution>")
         appendLine("                </executions>")
-        appendLine("            <configuration>")
-        appendLine(
-            """
-                <pluginOptions>
-                    <option>all-open:annotation=jakarta.persistence.Entity</option>
-                </pluginOptions>
-                <compilerPlugins>
-                    <plugin>noarg</plugin>
-                    <plugin>allopen</plugin>
-                    <plugin>spring</plugin>
-                    <plugin>jpa</plugin>
-                </compilerPlugins>
-        """
-        )
         appendLine(
             """
                 <dependencies>
@@ -131,6 +117,20 @@ class SpringKotlinMavenGenerator(
                         <version>${'$'}{kotlin.version}</version>
                     </dependency>
                 </dependencies>
+        """
+        )
+        appendLine("            <configuration>")
+        appendLine(
+            """
+                <pluginOptions>
+                    <option>all-open:annotation=jakarta.persistence.Entity</option>
+                </pluginOptions>
+                <compilerPlugins>
+                    <plugin>noarg</plugin>
+                    <plugin>allopen</plugin>
+                    <plugin>spring</plugin>
+                    <plugin>jpa</plugin>
+                </compilerPlugins>
         """
         )
         appendLine("                <jvmTarget>${'$'}{java.version}</jvmTarget>")
