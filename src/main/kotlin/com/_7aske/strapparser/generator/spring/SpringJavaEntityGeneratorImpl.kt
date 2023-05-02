@@ -306,8 +306,8 @@ class SpringJavaEntityGeneratorImpl(
                     append(Lombok.ToStringExclude)
                 }
                 append("@JsonIgnoreProperties(\"${getVariableName().plural()}\")\n")
-                append("@ManyToOne\n")
-                append("@JoinColumn\n")
+                appendLine("@ManyToOne")
+                appendLine("@JoinColumn(name=\"${field.getColumnName()}\")")
                 append("private $type ${getVariableName(field)};\n")
             } else if (field.isList()) {
                 if (ctx.args.lombok) {

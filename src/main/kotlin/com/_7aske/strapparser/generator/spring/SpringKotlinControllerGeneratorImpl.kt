@@ -9,6 +9,7 @@ import com._7aske.strapparser.generator.kotlin.Formatter
 import com._7aske.strapparser.generator.kotlin.KotlinClassGenerator
 import com._7aske.strapparser.generator.kotlin.KotlinMethodBuilder
 import com._7aske.strapparser.generator.spring.SpringPackages.SPRING_BIND_PACKAGE
+import com._7aske.strapparser.generator.spring.SpringPackages.SPRING_DATA_WEB_PACKAGE
 import com._7aske.strapparser.generator.spring.SpringPackages.SPRING_DOMAIN_PACKAGE
 import com._7aske.strapparser.generator.spring.SpringPackages.SPRING_HTTP_PACKAGE
 import java.nio.file.Path
@@ -28,6 +29,7 @@ class SpringKotlinControllerGeneratorImpl(
     init {
         import("$SPRING_BIND_PACKAGE.*")
         import("$SPRING_DOMAIN_PACKAGE.*")
+        import("$SPRING_DATA_WEB_PACKAGE.PageableDefault")
         import("$SPRING_HTTP_PACKAGE.ResponseEntity")
         import("$SPRING_HTTP_PACKAGE.HttpStatus")
         import("$SPRING_HTTP_PACKAGE.HttpHeaders")
@@ -102,7 +104,7 @@ class SpringKotlinControllerGeneratorImpl(
                 annotations.add(Mapping.get().toString())
                 returnType =
                     "ResponseEntity<Page<${entity.getClassName()}>>"
-                parameters.add(listOf("Pageable", "page"))
+                parameters.add(listOf("@PageableDefault", "Pageable", "page"))
                 implementation =
                     "return ResponseEntity.ok($serviceVarName.findAll(page))"
             }

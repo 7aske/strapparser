@@ -13,6 +13,7 @@ import com._7aske.strapparser.generator.java.JavaClassGenerator
 import com._7aske.strapparser.generator.java.JavaMethodBuilder
 import com._7aske.strapparser.generator.java.Lombok
 import com._7aske.strapparser.generator.spring.SpringPackages.SPRING_BIND_PACKAGE
+import com._7aske.strapparser.generator.spring.SpringPackages.SPRING_DATA_WEB_PACKAGE
 import com._7aske.strapparser.generator.spring.SpringPackages.SPRING_DOMAIN_PACKAGE
 import com._7aske.strapparser.generator.spring.SpringPackages.SPRING_HTTP_PACKAGE
 import java.nio.file.Path
@@ -32,6 +33,7 @@ class SpringJavaControllerGeneratorImpl(
     init {
         import("$SPRING_BIND_PACKAGE.*")
         import("$SPRING_DOMAIN_PACKAGE.*")
+        import("$SPRING_DATA_WEB_PACKAGE.PageableDefault")
         import("$SPRING_HTTP_PACKAGE.ResponseEntity")
         import("$SPRING_HTTP_PACKAGE.HttpStatus")
         import("$SPRING_HTTP_PACKAGE.HttpHeaders")
@@ -119,7 +121,7 @@ class SpringJavaControllerGeneratorImpl(
                 annotations.add(Mapping.get().toString())
                 returnType =
                     "ResponseEntity<Page<${entity.getClassName()}>>"
-                parameters.add(listOf("Pageable", "page"))
+                parameters.add(listOf("@PageableDefault", "Pageable", "page"))
                 implementation =
                     "return ResponseEntity.ok($serviceVarName.findAll(page));"
             }

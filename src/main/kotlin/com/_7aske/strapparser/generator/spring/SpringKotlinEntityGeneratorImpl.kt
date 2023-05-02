@@ -231,7 +231,7 @@ class SpringKotlinEntityGeneratorImpl(
             if (field.isRef()) {
                 appendLine("@JsonIgnoreProperties(\"${getVariableName().plural()}\")")
                 appendLine("@ManyToOne")
-                appendLine("@JoinColumn")
+                appendLine("@JoinColumn(name=\"${field.getColumnName()}\")")
                 appendLine("var ${getVariableName(field)}: $type,")
             } else if (field.isList()) {
                 val referenced = ctx.getReferencedEntity(type)
