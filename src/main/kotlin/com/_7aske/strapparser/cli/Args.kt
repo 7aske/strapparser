@@ -2,12 +2,10 @@ package com._7aske.strapparser.cli
 
 import com._7aske.strapparser.generator.AvailableDatabases
 import com._7aske.strapparser.generator.Generator
+import com._7aske.strapparser.generator.translation.TranslationStrategyType
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
-import com.github.ajalt.clikt.parameters.options.convert
-import com.github.ajalt.clikt.parameters.options.default
-import com.github.ajalt.clikt.parameters.options.flag
-import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.path
@@ -137,6 +135,14 @@ class Args : CliktCommand(printHelpOnEmptyArgs = true) {
         "--language",
         help = "Language (e.g. java, kotlin)"
     ).default("kotlin")
+
+    val namingStrategy: List<TranslationStrategyType> by option(
+        "--dbNamingStrategy",
+        help = "Database naming strategy (e.g. snake, kebab, uppercase, lowercase, none). Default: none"
+    ).convert { style ->
+        style.uppercase().split(",")
+            .map { TranslationStrategyType.valueOf(it) }
+    }.default(listOf(TranslationStrategyType.NONE))
 
     val inputFile by argument(
         help = "Input .strap file"

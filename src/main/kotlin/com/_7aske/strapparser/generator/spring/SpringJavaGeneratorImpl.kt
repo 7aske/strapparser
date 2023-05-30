@@ -4,6 +4,7 @@ import com._7aske.strapparser.cli.Args
 import com._7aske.strapparser.generator.AvailableDatabases
 import com._7aske.strapparser.generator.Generator
 import com._7aske.strapparser.generator.GeneratorContext
+import com._7aske.strapparser.generator.translation.TranslationStrategyFactory
 import com._7aske.strapparser.parser.StrapFileResolver
 import com._7aske.strapparser.util.writeString
 import java.nio.file.Paths
@@ -12,10 +13,12 @@ class SpringJavaGeneratorImpl(private val args: Args) : Generator {
     private val dataTypeResolver = SpringJavaDataTypeResolverImpl()
 
     override fun generate() {
-        val entities = StrapFileResolver().resolve(args.inputFile)
+        val translationStrategy = TranslationStrategyFactory.getStrategy(args.namingStrategy)
+
+        val entities = StrapFileResolver(translationStrategy).resolve(args.inputFile)
             .associateBy { it.name }
 
-        val ctx = GeneratorContext(entities, args)
+        val ctx = GeneratorContext(entities, translationStrategy, args)
 
         if (ctx.args.lombok) {
             ctx.dependencies.add("org.projectlombok.lombok")

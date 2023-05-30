@@ -1,13 +1,15 @@
 package com._7aske.strapparser.parser
 
 import com._7aske.strapparser.extensions.uncapitalize
+import com._7aske.strapparser.generator.translation.TranslationStrategy
 import com._7aske.strapparser.parser.ast.*
 import com._7aske.strapparser.parser.definitions.*
 import com._7aske.strapparser.util.printLocation
 
 class Interpreter(
     private val text: String,
-    private val astList: List<AstNode>
+    private val astList: List<AstNode>,
+    private val translationStrategy: TranslationStrategy,
 ) {
     // interpretation result
     private val entities = mutableMapOf<String, Entity>()
@@ -77,7 +79,7 @@ class Interpreter(
         val attrs = ast.attributes
             .map { Attribute(it.token, (it as AstAttributeNode).getValue()) }
 
-        return Entity(ast.token, name, fields, attrs)
+        return Entity(ast.token, name, fields, attrs, translationStrategy)
     }
 
     private fun evaluateFieldNode(ast: AstFieldNode): Field {
@@ -87,7 +89,7 @@ class Interpreter(
         val attrs = ast.attributes
             .map { Attribute(it.token, (it as AstAttributeNode).getValue()) }
 
-        return Field(ast.token, name, type, attrs)
+        return Field(ast.token, name, type, attrs, translationStrategy)
     }
 
     private fun evaluateAstTypeNode(type: AstNode): FieldType {

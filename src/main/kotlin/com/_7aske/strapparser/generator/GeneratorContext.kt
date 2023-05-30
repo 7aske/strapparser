@@ -1,6 +1,7 @@
 package com._7aske.strapparser.generator
 
 import com._7aske.strapparser.cli.Args
+import com._7aske.strapparser.generator.translation.TranslationStrategy
 import com._7aske.strapparser.parser.Token
 import com._7aske.strapparser.parser.TokenType
 import com._7aske.strapparser.parser.definitions.Entity
@@ -10,6 +11,7 @@ import com._7aske.strapparser.parser.definitions.RefFieldType
 
 class GeneratorContext(
     private val entities: Map<String, Entity>,
+    private val translationStrategy: TranslationStrategy,
     internal val args: Args,
     internal val dependencies: MutableCollection<String> = mutableSetOf(),
 ) {
@@ -54,7 +56,8 @@ class GeneratorContext(
             fieldToken,
             entity.name.replaceFirstChar { it.lowercase() },
             type,
-            listOf()
+            listOf(),
+            translationStrategy
         )
     }
 }

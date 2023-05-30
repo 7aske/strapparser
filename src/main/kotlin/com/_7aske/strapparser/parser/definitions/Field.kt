@@ -1,5 +1,6 @@
 package com._7aske.strapparser.parser.definitions
 
+import com._7aske.strapparser.generator.translation.TranslationStrategy
 import com._7aske.strapparser.parser.Token
 import com._7aske.strapparser.parser.TokenType
 
@@ -7,7 +8,8 @@ class Field(
     token: Token,
     val name: String,
     var type: FieldType,
-    val attributes: List<Attribute>
+    val attributes: List<Attribute>,
+    private val translationStrategy: TranslationStrategy,
 ) : Definition(token) {
 
     fun isOfType(type: TokenType): Boolean =
@@ -24,7 +26,7 @@ class Field(
     fun getColumnName(): String = attributes
         .firstOrNull { it.token.type == TokenType.COLUMN }
         ?.value
-        ?: this.name
+        ?: translationStrategy.translate(this.name)
 
     fun getReferencedEntityName(): String {
         check(isList() || isRef())

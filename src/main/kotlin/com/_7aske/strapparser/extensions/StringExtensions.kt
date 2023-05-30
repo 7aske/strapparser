@@ -41,3 +41,15 @@ fun String.toKebabCase(): String =
             }
         }
     }
+
+fun String.toSnakeCase(): String =
+    buildString {
+        for ((i, c) in this@toSnakeCase.withIndex()) {
+            if (c.isUpperCase() && i != 0) {
+                append('_')
+                append(c.lowercase())
+            } else {
+                append(c)
+            }
+        }
+    }

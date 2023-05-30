@@ -39,6 +39,9 @@ Options:
   --databasePort INT               Database port
   --databaseName TEXT              Database name
   --language TEXT                  Language (e.g. java, kotlin)
+  --dbNamingStrategy VALUE         Database naming strategy (e.g. snake,
+                                   kebab, uppercase, lowercase, none).
+                                   Default: none
   -h, --help                       Show this message and exit
 
 Arguments:
